@@ -1,0 +1,21 @@
+{
+    "name": "collei/collection",
+    "description": "Laravel-inpired Collection class and abilities.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Al Ju",
+            "email": "alarido.su@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": "^7.2 || ^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Collei\\": "src/Collei/"
+        }
+    }
+}
