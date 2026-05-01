@@ -2,15 +2,23 @@
 namespace Collei\Collections;
 
 use ArrayAccess;
-use Traversable;
+use Countable;
+use IteratorAggregate;
 use InvalidArgumentException;
+use Traversable;
 use Closure;
+use Collei\Collections\Traits\HasArrayAccess;
+use Collei\Collections\Traits\EnumeratesValues;
+use Collei\Collections\Exceptions\CollectionException;
 
 /**
  * Reunites array helper functions
  */
-class Collection
+class Collection implements ArrayAccess, Countable, IteratorAggregate
 {
+	use HasArrayAccess;
+	use EnumeratesValues;
+
     private $items = [];
 
     public function __construct(array $items = [])
@@ -23,7 +31,12 @@ class Collection
 		return new HighOrderCollectionProxy($this, $name);
 	}
 
-	public function copy()
+	public function getIterator(): Traversable
+	{
+		return new ArrayIterator($this);
+	}
+
+	public function copy(): static
 	{
 		return new static($this->items);
 	}
@@ -193,13 +206,9 @@ class Collection
 		return new static(array_combine(array_values($this->items), array_keys($this->items)));
 	}
 
-	public function keyBy(string|callable $key)
+	public function keyBy(string|Closure $key)
 	{
-		if (is_string($key)) {
-			$key = function($value) {
-				return $value[$key] ?? $value->$key ?? null;
-			};
-		}
+		$key = $this->valueRetriever($key);
 
 		$generator = function() use ($key) {
 			$idx = 0;
@@ -222,11 +231,11 @@ class Collection
 		return $result;
 	}
 
-	public function map(callable $callback)
+	public function map(Closure $callback)
 	{
 		$mapper = function() use ($callback) {
 			foreach ($this->items as $key => $value) {
-				yield $key => $callback($value, $key);
+				yield $key => $callback($value);
 			}
 		};
 
@@ -246,13 +255,71 @@ class Collection
 		});
 	}
 
-/**
-;mapSpread($callback): Maps a callback that accepts multiple arguments. 
-;mapToGroups($callback): Groups items by key after mapping. 
-;mapWithKeys($callback): Maps to key-value pairs. 
-;merge($items): Merges another collection or array.
-;mergeRecursive($items): Recursively merges items.
-**/
+	public function mapSpread(Closure $callback)
+	{
+		try {
+			return $this->map(function ($value) use ($callback) {
+				if (is_iterable($value)) {
+					return $callback(...$value);
+				}
+			});
+		}
+		catch (Throwable $e) {
+			throw new CollectionException(
+				'Calback passed to mapSpread must be the same argument count equals to the number of members of each item', 0, $e
+			);
+		}
+	}
+
+	public function mapToGroups(Closure $callback)
+	{
+		$groups = $this->map($callback)->reduce(function ($groups, $pair) {
+			$groups[key($pair)][] = reset($pair);
+			return $groups;
+		}, []);
+
+		return (new static($groups))->mapInto(static::class);
+	}
+
+	public function mapWithKeys(Closure $callback)
+	{
+		$mapper = function() use ($callback) {
+			foreach ($this->items as $key => $value) {
+				yield $key => $callback($value, $key);
+			}
+		};
+
+		$result = new static();
+
+		foreach ($mapper() as $k => $v) {
+			$result[$k] = $v;
+		}
+
+		return $result;
+	}
+
+	public function isList()
+	{
+		return array_is_list($this->items);
+	}
+
+	public function merge($items)
+	{
+		return new static(
+			array_merge(
+				$this->items, $items instanceof static ? $items->all() : $items
+			)
+		);
+	}
+
+	public function mergeRecursive($items)
+	{
+		return new static(
+			array_merge_recursive(
+				$this->items, $items instanceof static ? $items->all() : $items
+			)
+		);
+	}
 
 	public function partition(Closure $callback)
 	{
@@ -345,9 +412,7 @@ class Collection
 			$max = count($items);
 
 			while ($max > 0) {
-				$current = 0;
-				$target = random_int(0, $max);
-				$chosen = null;
+				[$current, $target, $chosen] = [0, random_int(0, $max), null];
 
 				foreach ($items as $key => $value) {
 					if ($current < $target) {
@@ -371,11 +436,35 @@ class Collection
 		return new static(iterator_to_array($generator, true));
 	}
 
-/**
-sliding($windowSize): Creates a sliding window of items.
-**/
+	public function sliding(int $size, int $step = 1)
+	{
+		[$collection, $length, $offset] = [$this->values(), $this->count(), 0];
 
-	public function transform(callable $callback)
+		[$chunk, $chunks] = [[], []];
+
+		foreach ($collection as $key => $value) {
+			if ($key % $step !== 0) {
+				continue;
+			}
+
+			$maximum = ($key + $size);
+			
+			if ($maximum > $length) {
+				break;
+			}
+			
+			for ($offset = $key; $offset < $maximum; ++$offset) {
+				$chunk[] = $collection[$offset];
+			}
+			
+			$chunks[] = new static($chunk);
+			$chunk = [];
+		}
+
+		return new static($chunks);
+	}
+
+	public function transform(Closure $callback)
 	{
 		foreach ($this->items as $key => $value) {
 			$this->items[$key] = $callback($value, $key);
@@ -384,9 +473,10 @@ sliding($windowSize): Creates a sliding window of items.
 		return $this;
 	}
 
-/**
-union($items): Merges, preferring keys from the original collection.
-**/
+	public function union(iterable $items)
+	{
+		return new static($this->items + $items);
+	}
 
 	public function values()
 	{
@@ -406,9 +496,10 @@ union($items): Merges, preferring keys from the original collection.
 		return new static(is_array($value) ? $value : array($value));
 	}
 
-/**
-zip($items): Zips the collection with another array.
-**/
+	public function zip(iterable $items)
+	{
+		return new static(array_map(null, $this->values(), array_values($items)));
+	}
 
 	################# Filtering & Searching
 
@@ -422,7 +513,7 @@ diffKeys($items): Returns items with keys not present in the given items.
 except($keys): Returns all items except those with specified keys.
 **/
 
-	public function filter(callable $callback)
+	public function filter(Closure $callback)
 	{
 		return new static(array_filter($this->items, $callback, ARRAY_FILTER_USE_BOTH));
 	}
@@ -470,7 +561,7 @@ firstWhere($key, $operator, $value): Returns the first item matching a key-value
 		return new static($result);
 	}
 
-	public function reject(callable $callback)
+	public function reject(Closure $callback)
 	{
 		return $this->filter(function($value, $key) use ($callback) {
 			return ! $callback($value, $key);
@@ -495,12 +586,32 @@ whereInstanceOf($className): Filters items by instance type.
 
 	######################################### Aggregation & Statistics 
 
+	public function avg(string|Closure $callback = null)
+	{
+		[$count, $sum] = [0, 0];
+
+		$callback = $this->valueRetriever($callback);
+
+		foreach ($this->items as $item) if (! is_null($number = $callback($item))) {
+			++$count;
+			$sum += $number;
+		}
+
+		return $count ? ($sum / $count) : null;
+	}
+
+	public function average(string|Closure $callback = null)
+	{
+		return $this->avg($callable);
+	}
+
+	public function count(): int
+	{
+		return count($this->items);
+	}
 
 
 /**
-avg($callback = null): Returns the average value. 
-average($callback = null): Alias for avg. 
-count(): Returns the total number of items.
 countBy($callback = null): Counts the frequency of values.
 max($callback = null): Returns the maximum value.
 median($callback = null): Returns the median value.
@@ -521,7 +632,14 @@ firstWhere($key, $operator, $value): Returns the first item matching a condition
 groupBy($callback): Groups items by a key. 
 implode($value, $glue = null): Joins items into a string.
 join($glue, $final = null): Joins items with a glue string.
-keys(): Returns all keys. 
+**/
+
+	public function keys()
+	{
+		return new static(array_keys($this->items));
+	}
+
+/**
 last($callback = null, $default = null): Returns the last item. 
 nth($step, $offset = 0): Returns every n-th item.
 pluck($value, $key = null): Extracts a list of values for a given key.
@@ -531,7 +649,11 @@ slice($offset, $length = null): Returns a slice of the collection.
 skip($count): Skips a number of items.
 take($limit): Returns a specified number of items.
 value($callback): Gets the value of the first item after applying a callback.
-Sorting
+**/
+
+	################################################# Sorting
+
+/**
 sort($callback = null): Sorts the collection.
 sortBy($callback, $options): Sorts by a specific key. 
 sortByDesc($callback, $options): Sorts by a specific key in descending order. 
@@ -571,69 +693,13 @@ whenNotEmpty($callback, $default = null): Executes a callback if the collection 
 /**
 Most Laravel Collection methods are immutable, meaning they return a new collection instance rather than changing the original.  However, the following methods modify the collection itself:
 
-transform: Applies a callback to each item and modifies the collection in place. 
+---transform: Applies a callback to each item and modifies the collection in place. 
 ---push: Adds one or more items to the end of the collection. 
 pop: Removes and returns the last item from the collection. 
 shift: Removes and returns the first item from the collection.
 ---put: Adds or updates an item at a specific key. 
 ---prepend: Adds one or more items to the beginning of the collection. 
 ---forget: Removes an item by its key.
-
-
-
-PROXY OF OBJECT
-
-
-class Esperto
-{
-	public function __get(string $name)
-	{
-		if (method_exists($this, $name)) {
-			return new Subsperto($this, $name);
-		}
-	}
-	
-	public function sum($callback)
-	{
-		echo "Calculating the sum of {$callback}\n";
-		return 1233444555;
-	}
-	
-	public function average($callback)
-	{
-		echo "Calculating the average of {$callback}\n";
-		return 97425;
-	}
-	
-	public function pascal($callback)
-	{
-		echo "Calculating the pascal of {$callback}\n";
-		return 11.99;
-	}
-}
-
-class Subsperto
-{
-	public function __construct(private Esperto $object, private string $method) {}
-	
-	public function __get(string $name)
-	{
-		$method = $this->method;
-		return $this->object->{$method}($name);
-	}
-}
-
-$teste = new Esperto();
-
-$resultado = $teste->sum->quantity;
-echo "resultado: $resultado\n";
-$resultado = $teste->average->price;
-echo "resultado: $resultado\n";
-$resultado = $teste->pascal->userage;
-echo "resultado: $resultado\n";
-
-
-
 **/
 
 }
