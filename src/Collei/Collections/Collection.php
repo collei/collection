@@ -4,12 +4,14 @@ namespace Collei\Collections;
 use ArrayAccess;
 use Countable;
 use IteratorAggregate;
-use InvalidArgumentException;
 use Traversable;
 use Closure;
+use ArgumentCountError;
+use InvalidArgumentException;
 use Collei\Collections\Traits\HasArrayAccess;
 use Collei\Collections\Traits\EnumeratesValues;
 use Collei\Collections\Exceptions\CollectionException;
+use Collei\Collections\Exceptions\ItemNotFoundException;
 
 /**
  * Reunites array helper functions
@@ -19,51 +21,101 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
 	use HasArrayAccess;
 	use EnumeratesValues;
 
+	/**
+	 * @var array
+	 */
     private $items = [];
 
-    public function __construct(array $items = [])
+	/**
+	 * Initialization.
+	 * 
+	 * @param iterable $items = []
+	 * @param bool $useKeys = false
+	 */
+    public function __construct(iterable $items = [], bool $useKeys = false)
     {
-        $this->items = $items;
+        $this->items = is_array($items) ? $items : iterator_to_array($items, $useKeys);
     }
 
+	/**
+	 * Debug available information.
+	 * 
+	 * @return array
+	 */
+	public function __debugInfo()
+	{
+		return [
+			'items' => $this->items
+		];
+	}
+
+	/**
+	 * Leverages certain actions to a high order proxy.
+	 * 
+	 * @param string $name Name of the method
+	 * @return HighOrderCollectionProxy
+	 */
 	public function __get(string $name)
 	{
 		return new HighOrderCollectionProxy($this, $name);
 	}
 
+	/**
+	 * Obtains an iterator for the collection.
+	 * 
+	 * @return Traversable
+	 */
 	public function getIterator(): Traversable
 	{
 		return new ArrayIterator($this);
 	}
 
+	/**
+	 * Returns a copy of the collection.
+	 * 
+	 * @return static
+	 */
 	public function copy(): static
 	{
 		return new static($this->items);
 	}
 
+	/**
+	 * Obtains a generator closure for the collection.
+	 * 
+	 * @return Closure
+	 */
 	public function generator(bool $withKeys = false)
 	{
-		if ($withKeys) return function() {
-			foreach ($this->items as $key => $value) {
-				yield $key => $value;
-			}
-		};
-
-		return function() {
+		return function() use ($withKeys) {
 			foreach ($this->items as $value) {
-				yield $value;
+				if ($withKeys) {
+					yield $key => $value;
+				} else {
+					yield $value;
+				}
 			}
 		};
 	}
 
+	/**
+	 * Returns the underlying array.
+	 * 
+	 * @return array
+	 */
 	public function all()
 	{
 		return $this->items;
 	}
 
+	/**
+	 * Obtains an eager collection.
+	 * 
+	 * @return self
+	 */
 	public function collect()
 	{
-		return new static($this->items);
+		return new self($this->items);
 	}
 
 	public static function make(array $items)
@@ -257,18 +309,20 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
 
 	public function mapSpread(Closure $callback)
 	{
-		try {
-			return $this->map(function ($value) use ($callback) {
+		return $this->map(function ($value) use ($callback) {
+			try {
 				if (is_iterable($value)) {
 					return $callback(...$value);
+				} else {
+					return $callback($value);
 				}
-			});
-		}
-		catch (Throwable $e) {
-			throw new CollectionException(
-				'Calback passed to mapSpread must be the same argument count equals to the number of members of each item', 0, $e
-			);
-		}
+				//
+			} catch (ArgumentCountError $e) {
+				throw new CollectionException(
+					$this, 'Calback passed to mapSpread must be the same argument count equals to the number of members of each item', 0, $e
+				);
+			}
+		});
 	}
 
 	public function mapToGroups(Closure $callback)
@@ -518,9 +572,40 @@ except($keys): Returns all items except those with specified keys.
 		return new static(array_filter($this->items, $callback, ARRAY_FILTER_USE_BOTH));
 	}
 
+	public function first(Closure $callback = null, $default = null)
+	{
+		if ($this->isEmpty()) {
+			return null;
+		}
+
+		if (is_null($callback)) {
+			return array_first($this->items);
+		}
+
+		$last = null;
+
+		foreach ($this->items as $key => $value) {
+			if ($callback($value)) {
+				return $value ?? $default;
+			}
+		}
+
+		return $default ?? null;
+	}
+
+	public function firstOrFail(Closure $callback = null)
+	{
+		$result = $this->first($callback);
+
+		if (is_null($result)) {
+			throw new ItemNotFoundException($this, 'Item not found on collection');
+		}
+
+		return $result;
+	}
+
+
 /**
-first($callback = null, $default = null): Returns the first item.
-firstOrFail($callback = null): Returns the first item or throws an exception. 
 firstWhere($key, $operator, $value): Returns the first item matching a key-value condition.
 **/
 
@@ -610,37 +695,232 @@ whereInstanceOf($className): Filters items by instance type.
 		return count($this->items);
 	}
 
+	public function countBy($callback = null)
+	{
+		$callback = $this->valueRetriever($callback);
+
+		$counts = [];
+
+		foreach ($this->items as $key => $item) {
+			$group = $callback($item, $key);
+
+			if (empty($counts[$group])) {
+				$counts[$group] = 0;
+			}
+
+			$counts[$group]++;
+		}
+
+		return new static($counts);
+	}
+
+	public function max($callback = null)
+	{
+		if (is_null($callback)) {
+			return max($this->items);
+		}
+
+		$callback = $this->valueRetriever($callback);
+
+		return $this->map($callback)->max();
+	}
 
 /**
-countBy($callback = null): Counts the frequency of values.
-max($callback = null): Returns the maximum value.
 median($callback = null): Returns the median value.
-min($callback = null): Returns the minimum value.
-mode($callback = null): Returns the mode value.
-sum($callback = null): Returns the sum of values.
 **/
+
+	public function min($callback = null)
+	{
+		if (is_null($callback)) {
+			return min($this->items);
+		}
+
+		$callback = $this->valueRetriever($callback);
+
+		return $this->map($callback)->min();
+	}
+
+/**
+mode($callback = null): Returns the mode value.
+**/
+
+	public function sum($callback = null)
+	{
+		if (is_null($callback)) {
+			return array_sum($this->items);
+		}
+
+		$callback = $this->valueRetriever($callback);
+
+		return $this->map($callback)->sum();
+	}
 
 	######################################### Extraction & Access
 
 /**
 after($value): Returns the item after the given value. 
 before($value): Returns the item before the given value.
-each($callback): Iterates over each item.
-eachSpread($callback): Iterates with spread arguments.
-every($step, $offset = 0): Creates a new collection with every n-th element. 
-firstWhere($key, $operator, $value): Returns the first item matching a condition.
-groupBy($callback): Groups items by a key. 
-implode($value, $glue = null): Joins items into a string.
-join($glue, $final = null): Joins items with a glue string.
 **/
+
+	public function each($callback)
+	{
+		foreach ($this->items as $key => $item) if (false === $callback($item, $key)) {
+			break;
+		}
+
+		return $this;
+	}
+
+	public function eachSpread(Closure $callback)
+	{
+		try {
+			foreach ($this->items as $key => $item) {
+				if (is_iterable($value)) {
+					if (false === $callback(...$value)) {
+						break;
+					}
+				} else {
+					if (false === $callback($value)) {
+						break;
+					}
+				}
+			}
+			//
+		} catch (ArgumentCountError $e) {
+			throw new CollectionException(
+				$this, 'Calback passed to eachSpread must be the same argument count equals to the number of members of each item', 0, $e
+			);
+		}
+
+		return $this;
+	}
+
+	public function every(int $step, int $offset = 0)
+	{
+		$step = ($step > 0) ? $step : 1;
+		$offset = ($offset >= 0) ? $offset : 0;
+		
+		[$current, $selected] = [0, []];
+
+		foreach ($this->items as $key => $item) {
+			if ($current < $offset) {
+				continue;
+			}
+
+			if ($current % $step === 0) {
+				$selected[$key] = $item;
+			}
+
+			$current++;
+		}
+
+		return new static($selected);
+	}
+
+/**
+firstWhere($key, $operator, $value): Returns the first item matching a condition.
+**/
+
+	public function groupBy($callback = null)
+	{
+		$callback = $this->valueRetriever($callback);
+
+		$groups = [];
+
+		foreach ($this->items as $key => $item) {
+			$group = $callback($item, $key);
+
+			if (empty($groups[$group])) {
+				$groups[$group] = [];
+			}
+
+			$groups[$group][] = $item;
+		}
+
+		return new static($groups);
+	}
+
+	public function implode(string|Closure $value, string $glue = null)
+	{
+		if (is_null($glue)) {
+			$glue = is_string($value) ? $value : null;
+
+			return implode($glue, $this->items);
+		}
+
+		$callback = $this->valueRetriever($value);
+
+		return implode($glue, $this->mapWithKeys($callback)->all());
+	}
+
+	/**
+	 * Performs a string join() operation upon map()'ed elements.
+	 * 
+	 * Equivalent of $collection->map($value)->join($glue, $final).
+	 * 
+	 * @param string|Closure $value
+	 * @param string $glue = null
+	 * @param string $final = null
+	 * @return string
+	 */
+	public function mappedJoin(string|Closure $value, string $glue = null, string $final = null)
+	{
+		if ($value instanceof Closure) {
+			if (get_closure_arg_count($value) == 2) {
+				return $this->mapWithKeys($value)->join($glue, $final);
+			}
+
+			return $this->map($value)->join($glue, $final);
+		}
+
+		$value = $this->valueRetriever($value);
+
+		return $this->map($value)->join($glue, $final);
+	}
+
+	/**
+	 * Performs a string join() operation.
+	 * 
+	 * @param string $glue
+	 * @param string $final = null
+	 * @return string
+	 */
+	public function join(string $glue, string $final = null)
+	{
+		if (is_null($final)) {
+			return $this->implode($glue);
+		}
+
+		return implode($glue, array_slice($this->items, 0, -1)) . $final . array_last($this->items);
+	}
 
 	public function keys()
 	{
 		return new static(array_keys($this->items));
 	}
 
+	public function last(Closure $callback = null, $default = null)
+	{
+		if ($this->isEmpty()) {
+			return null;
+		}
+
+		if (is_null($callback)) {
+			return array_last($this->items);
+		}
+
+		$last = null;
+
+		foreach (array_reverse($this->items, true) as $key => $value) {
+			if ($callback($value)) {
+				return $value ?? $default;
+			}
+		}
+
+		return $default ?? null;
+	}
+
 /**
-last($callback = null, $default = null): Returns the last item. 
 nth($step, $offset = 0): Returns every n-th item.
 pluck($value, $key = null): Extracts a list of values for a given key.
 pop(): Removes and returns the last item.
@@ -670,8 +950,19 @@ dd(): Dumps the collection and terminates execution.
 dump(): Dumps the collection. 
 ensure($callback): Ensures a condition is met, throwing an exception otherwise.
 hasSole($key): Checks if a key exists and is the only item. 
-isEmpty(): Checks if the collection is empty. 
-isNotEmpty(): Checks if the collection is not empty. 
+**/
+
+	public function isEmpty()
+	{
+		return empty($this->items);
+	}
+
+	public function isNotEmpty()
+	{
+		return ! $this->isEmpty();
+	}
+
+/**
 macro($name, $macro): Registers a custom macro.
 pad($size, $value): Pads the collection to a specified length.
 random($number = null): Returns a random item or items.
