@@ -4,33 +4,76 @@ namespace Collei\Collections;
 use RuntimeException;
 
 /**
- * Reunites array helper functions
+ * Higher order collection proxy.
  */
 class HighOrderCollectionProxy
 {
-    private const PROXIED_METHODS = [
-        'avg',
-        'average',
-        'sum',
-    ];
-
+    /**
+     * @var Collei\Collections\Collection The proxied collection
+     */
     private $collection;
-    private $method;
 
-    public function __construct(Collection $collection, string $method)
+    /**
+     * @var string The proxied method
+     */
+    private $property;
+
+    /**
+     * Initialization.
+     * 
+     * @param Collei\Collections\Collection $collection
+     * @param string $property
+     */
+    public function __construct(Collection $collection, string $property)
     {
         $this->collection = $collection;
-        $this->method = $method;
+        $this->property = $property;
     }
 
-	public function __get(string $name)
+    /**
+     * Redirects calls to methods for value retrieval.
+     * 
+     * @param string $key
+     * @return mixed
+     */
+	public function __get(string $key)
 	{
-        if (! in_array($name, self::PROXIED_METHODS, true)) {
-            throw new RuntimeException(sprintf('Method \'%s\' does not exists in the Collection instance', $name));
-        }
-
-        $method = $this->method;
-
-		return $this->collection->{$method}($name); 
+        return $this->collection->{$this->property}(function($item) use ($key) {
+            return is_array($item)
+                ? $item[$key]
+                : $item->{$key};
+        });
 	}
+
+    /**
+     * Redirects calls to methods for value attribution.
+     * 
+     * @param string $key
+     * @param mixed $value
+     * @return mixed
+     */
+	public function __set(string $key, $value)
+	{
+        return $this->collection->{$this->property}(function($item) use ($key, $value) {
+            if (is_object($item)) {
+                $item->{$key} = $value;
+            }
+        });
+	}
+
+    /**
+     * Redirects calls to items' methods.
+     * 
+     * @param string $method
+     * @param array $arguments
+     * @return mixed
+     */
+    public function __call(string $method, array $arguments)
+    {
+        return $this->collection->{$this->property}(function($item) use ($method, $arguments) {
+            return is_string($item)
+                ? $item::{$method}(...$arguments)
+                : $item->{$method}(...$arguments);
+        });
+    }
 }
