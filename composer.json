@@ -16,6 +16,10 @@
     "autoload": {
         "psr-4": {
             "Collei\\": "src/Collei/"
-        }
+        },
+        "files": [
+            "src/polyfills.php",
+            "src/helpers.php"
+        ]
     }
 }
