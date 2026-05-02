@@ -12,6 +12,7 @@ use Collei\Collections\Traits\HasArrayAccess;
 use Collei\Collections\Traits\EnumeratesValues;
 use Collei\Collections\Exceptions\CollectionException;
 use Collei\Collections\Exceptions\ItemNotFoundException;
+use Collei\Support\Arr;
 
 /**
  * Reunites array helper functions
@@ -319,7 +320,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
 				//
 			} catch (ArgumentCountError $e) {
 				throw new CollectionException(
-					$this, 'Calback passed to mapSpread must be the same argument count equals to the number of members of each item', 0, $e
+					$this, 'The callback passed must have the same argument count equals the item\'s member count', 0, $e
 				);
 			}
 		});
@@ -604,11 +605,6 @@ except($keys): Returns all items except those with specified keys.
 		return $result;
 	}
 
-
-/**
-firstWhere($key, $operator, $value): Returns the first item matching a key-value condition.
-**/
-
 	public function forget(int|string $key)
 	{
 		unset($this->items[$key]);
@@ -667,6 +663,7 @@ whereNotIn($key, $values): Filters items where a key's value is not in an array.
 whereNull($key): Filters items where a key's value is null. 
 whereNotNull($key): Filters items where a key's value is not null. 
 whereInstanceOf($className): Filters items by instance type.
+firstWhere($key, $operator, $value): Returns the first item matching a key-value condition.
 **/
 
 	######################################### Aggregation & Statistics 
@@ -757,10 +754,49 @@ mode($callback = null): Returns the mode value.
 
 	######################################### Extraction & Access
 
-/**
-after($value): Returns the item after the given value. 
-before($value): Returns the item before the given value.
-**/
+	public function after($value, bool $strict = false)
+	{
+		$targetKey = array_search($value, $this->items, $strict);
+
+		if (false === $targetKey) {
+			return null;
+		}
+
+		$pick = false;
+
+		foreach ($this->items as $key => $item) {
+			if ($pick) {
+				return $item;
+			}
+
+			if ($key == $targetKey) {
+				$pick = true;
+			}
+		}
+
+		return null;
+	}
+	
+	public function before($value, bool $strict = false)
+	{
+		$targetKey = array_search($value, $this->items, $strict);
+
+		if (false === $targetKey) {
+			return null;
+		}
+
+		$pick = false;
+
+		foreach (array_reverse($this->items, true) as $key => $item) {
+			if ($pick) {
+				return $item;
+			}
+
+			$pick = $key == $targetKey;
+		}
+
+		return null;
+	}
 
 	public function each($callback)
 	{
@@ -788,38 +824,29 @@ before($value): Returns the item before the given value.
 			//
 		} catch (ArgumentCountError $e) {
 			throw new CollectionException(
-				$this, 'Calback passed to eachSpread must be the same argument count equals to the number of members of each item', 0, $e
+				$this, 'The callback passed must have the same argument count equals the item\'s member count', 0, $e
 			);
 		}
 
 		return $this;
 	}
 
-	public function every(int $step, int $offset = 0)
+	public function every($step, int $offset = 0)
 	{
-		$step = ($step > 0) ? $step : 1;
-		$offset = ($offset >= 0) ? $offset : 0;
-		
-		[$current, $selected] = [0, []];
-
-		foreach ($this->items as $key => $item) {
-			if ($current < $offset) {
-				continue;
-			}
-
-			if ($current % $step === 0) {
-				$selected[$key] = $item;
-			}
-
-			$current++;
+		if (is_int($step)) {
+			return $this->nth($step, $offset);
 		}
 
-		return new static($selected);
-	}
+		if ($step instanceof Closure) {
+			foreach ($this->items as $key => $item) if (false === $step($item)) {
+				return false;
+			}
 
-/**
-firstWhere($key, $operator, $value): Returns the first item matching a condition.
-**/
+			return true;
+		}
+
+		return false;
+	}
 
 	public function groupBy($callback = null)
 	{
@@ -920,16 +947,75 @@ firstWhere($key, $operator, $value): Returns the first item matching a condition
 		return $default ?? null;
 	}
 
-/**
-nth($step, $offset = 0): Returns every n-th item.
-pluck($value, $key = null): Extracts a list of values for a given key.
-pop(): Removes and returns the last item.
-shift(): Removes and returns the first item.
-slice($offset, $length = null): Returns a slice of the collection. 
-skip($count): Skips a number of items.
-take($limit): Returns a specified number of items.
-value($callback): Gets the value of the first item after applying a callback.
-**/
+	public function nth(int $step, int $offset = 0)
+	{
+		$step = ($step > 0) ? $step : 1;
+		$offset = ($offset >= 0) ? $offset : 0;
+		
+		[$current, $selected] = [0, []];
+
+		foreach ($this->items as $key => $item) {
+			if ($current < $offset) {
+				continue;
+			}
+
+			if ($current % $step === 0) {
+				$selected[$key] = $item;
+			}
+
+			$current++;
+		}
+
+		return new static($selected);
+	}
+
+	public function pluck($value, $key = null)
+	{
+		return new static(Arr::pluck($this->items, $value, $key));
+	}
+
+	public function pop()
+	{
+		return array_pop($this->items);
+	}
+
+	public function shift()
+	{
+		return array_shift($this->items);
+	}
+
+	public function slice(int $offset, int $length = null, $preserveKeys = false)
+	{
+		return new static(array_slice($this->items, $offset, $length, $preserveKeys));
+	}
+
+	public function splice(int $offset, int $length = null, $replacement = [])
+	{
+		return new static(array_splice($this->items, $offset, $length, $replacement));
+	}
+
+	public function skip(int $count)
+	{
+		return $this->slice($count);
+	}
+
+	public function take(int $limit)
+	{
+		if ($limit < 0) {
+			return $this->slice($limit, abs($limit));
+		}
+
+		return $this->slice(0, abs($limit));
+	}
+
+	public function value(string $key, $default = null)
+	{
+		$value = $this->first(function($item) use ($key){
+			return Arr::has($item, $key);
+		});
+
+		return Arr::get($value, $key, $default);
+	}
 
 	################################################# Sorting
 
@@ -970,7 +1056,6 @@ reduce($callback, $initial = null): Reduces the collection to a single value.
 replace($items): Replaces items in the collection.
 replaceRecursive($items): Recursively replaces items.
 sole($callback = null): Returns the sole item, throwing an exception if not exactly one.
-splice($offset, $length = null, $replacement = []): Removes and returns a portion of the collection. 
 split($numberOfGroups): Splits the collection into a given number of groups. 
 tap($callback): Passes the collection to a callback and returns the original.
 times($times, $callback = null): Creates a new collection by invoking a callback a given amount of times.
@@ -980,17 +1065,5 @@ whenEmpty($callback, $default = null): Executes a callback if the collection is 
 whenNotEmpty($callback, $default = null): Executes a callback if the collection is not empty. 
 **/
 
-
-/**
-Most Laravel Collection methods are immutable, meaning they return a new collection instance rather than changing the original.  However, the following methods modify the collection itself:
-
----transform: Applies a callback to each item and modifies the collection in place. 
----push: Adds one or more items to the end of the collection. 
-pop: Removes and returns the last item from the collection. 
-shift: Removes and returns the first item from the collection.
----put: Adds or updates an item at a specific key. 
----prepend: Adds one or more items to the beginning of the collection. 
----forget: Removes an item by its key.
-**/
 
 }
