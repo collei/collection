@@ -1194,4 +1194,89 @@ abstract class Arr
 
 		return $dest;
 	}
+
+	/**
+	 * Pick random item(s) from array using random_int() inside a generator.
+	 * 
+	 * @param array $items
+	 * @param int $number = 1
+	 * @param bool $preserveKeys = false
+	 * @return array
+	 */
+	public static function random(array $items, int $number = 1, bool $preserveKeys = false)
+	{
+		$picked = [];
+
+		$generator = function(int $maxItemCount) use ($items) {
+			$max = count($items);
+
+			while ($maxItemCount > 0) {
+				[$current, $target, $chosen] = [0, random_int(0, $max), null];
+
+				foreach ($items as $key => $value) {
+					if ($current < $target) {
+						$current++;
+						continue;
+					}
+
+					$chosen = [$key, $value];
+					unset($items[$key]);
+					--$max;
+					--$maxItemCount;
+
+					break;
+				}
+
+				list($key, $value) = $chosen;
+
+				yield $key => $value;
+			}
+		};
+
+		foreach ($generator($number) as $key => $item) {
+			$picked[$key] = $item;
+		}
+
+		if (! $preserveKeys) {
+			return array_values($picked);
+		}
+
+		return $picked;
+	}
+
+	/**
+	 * Shuffles the array within a generator by using random_int().
+	 * 
+	 * @param array $items
+	 * @return array
+	 */
+	public static function shuffle(array $items)
+	{
+		$generator = function() use ($items) {
+			$max = count($items);
+
+			while ($max > 0) {
+				[$current, $target, $chosen] = [0, random_int(0, $max), null];
+
+				foreach ($items as $key => $value) {
+					if ($current < $target) {
+						++$current;
+						continue;
+					}
+
+					$chosen = [$key, $value];
+					unset($items[$key]);
+					--$max;
+
+					break;
+				}
+
+				list($key, $value) = $chosen;
+
+				yield $key => $value;
+			}
+		};
+
+		return iterator_to_array($generator, true);
+	} 
 }
