@@ -330,34 +330,7 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 
 	public function shuffle()
 	{
-		$items = $this->items;
-
-		$generator = function() use ($items) {
-			$max = count($items);
-
-			while ($max > 0) {
-				[$current, $target, $chosen] = [0, random_int(0, $max), null];
-
-				foreach ($items as $key => $value) {
-					if ($current < $target) {
-						++$current;
-						continue;
-					}
-
-					$chosen = [$key, $value];
-					unset($items[$key]);
-					--$max;
-
-					break;
-				}
-
-				list($key, $value) = $chosen;
-
-				yield $key => $value;
-			}
-		};
-
-		return new static(iterator_to_array($generator, true));
+		return new static(Arr::shuffle($this->items()));
 	}
 
 	public function sliding(int $size, int $step = 1)
@@ -838,11 +811,24 @@ crossJoin($items): Cross joins the collection with another.
 hasSole($key): Checks if a key exists and is the only item. 
 **/
 
-/**
-pad($size, $value): Pads the collection to a specified length.
-random($number = null): Returns a random item or items.
-**/
+	public function pad(int $size, $value = null)
+	{
+		return new static(array_pad($this->all(), $size, $value));
+	}
 
+	public function random($number = null, bool $preserveKeys = false)
+	{
+		if (is_null($number)) {
+			return Arr::random($this->items);
+		}
+
+		if (is_callable($number)) {
+			return new static(Arr::random($this->items, $number($this), $preserveKeys));
+		}
+
+		return new static(Arr::random($this->items, $number, $preserveKeys));
+	}
+	
 /**
 replace($items): Replaces items in the collection.
 replaceRecursive($items): Recursively replaces items.
