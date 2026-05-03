@@ -2,18 +2,23 @@
 namespace Collei\Collections\Traits;
 
 use ArrayAccess;
+use Closure;
 use Countable;
 use IteratorAggregate;
+use JsonSerializable;
 use Traversable;
-use Closure;
-use Exception;
 use ArgumentCountError;
+use Exception;
 use InvalidArgumentException;
-use Collei\Collections\{Collection, CollectionInterface};
+use UnexpectedValueException;
+use Collei\Collections\Collection;
+use Collei\Collections\CollectionInterface;
 use Collei\Collections\HighOrderCollectionProxy;
 use Collei\Collections\Exceptions\CollectionException;
 use Collei\Collections\Exceptions\ItemNotFoundException;
 use Collei\Support\Arr;
+use Collei\Support\Arrayable;
+use Collei\Support\Jsonable;
 
 trait CollectionTrait
 {
@@ -115,6 +120,26 @@ trait CollectionTrait
 	public function toPrettyJson()
 	{
 		return json_encode($this->items, JSON_PRETTY_PRINT);
+	}
+
+	public function jsonSerialize()
+	{
+		return array_map(function ($item) {
+			if ($item instanceof JsonSerializable) {
+				return $item->jsonSerialize();
+			}
+
+			if ($item instanceof Jsonable) {
+				return json_decode($item->toJson(), true);
+			}
+
+			if ($item instanceof Arrayable) {
+				return $item->toArray();
+			}
+
+			return $item;
+
+		}, $this->all());
 	}
 
 	public function mapInto(string $class)
@@ -518,5 +543,4 @@ firstWhere($key, $operator, $value): Returns the first item matching a key-value
             return $value;
         };
     }
-
 }
