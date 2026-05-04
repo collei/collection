@@ -2,6 +2,7 @@
 namespace Collei\Collections;
 
 use ArrayAccess;
+use ArrayIterator;
 use Countable;
 use IteratorAggregate;
 use Traversable;
@@ -81,7 +82,7 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 	 */
 	public function getIterator(): Traversable
 	{
-		return new ArrayIterator($this);
+		return new ArrayIterator($this->items);
 	}
 
 	/**
@@ -254,19 +255,7 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 
 	public function mapWithKeys(Closure $callback)
 	{
-		$mapper = function() use ($callback) {
-			foreach ($this->items as $key => $value) {
-				yield $key => $callback($value, $key);
-			}
-		};
-
-		$result = new static();
-
-		foreach ($mapper() as $k => $v) {
-			$result[$k] = $v;
-		}
-
-		return $result;
+		return new static(array_map($callback, $this->items, array_keys($this->items)));
 	}
 
 	public function isList()
@@ -382,19 +371,7 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 
 	public function map(Closure $callback)
 	{
-		$mapper = function() use ($callback) {
-			foreach ($this->items as $key => $value) {
-				yield $key => $callback($value);
-			}
-		};
-
-		$result = new static();
-
-		foreach ($mapper() as $k => $v) {
-			$result[$k] = $v;
-		}
-
-		return $result;
+		return new static(array_map($callback, $this->items));
 	}
 
 	public function zip(iterable $items)
@@ -526,7 +503,7 @@ except($keys): Returns all items except those with specified keys.
 
     public function median($callback = null)
     {
-        if ($this->empty()) {
+        if ($this->isEmpty()) {
             return null;
         }
         
@@ -551,7 +528,7 @@ except($keys): Returns all items except those with specified keys.
 
     public function mode($key = null)
     {
-        if ($this->empty()) {
+        if ($this->isEmpty()) {
             return null;
         }
 

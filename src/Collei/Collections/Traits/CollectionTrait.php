@@ -231,17 +231,19 @@ trait CollectionTrait
 		});
 	}
 
-	######################################### Aggregation & Statistics 
-
 	public function avg(string|Closure $callback = null)
 	{
 		[$count, $sum] = [0, 0];
 
 		$callback = $this->valueRetriever($callback);
 
-		foreach ($this->items as $item) if (! is_null($number = $callback($item))) {
-			++$count;
-			$sum += $number;
+		foreach ($this as $item) {
+			$number = $callback($item);
+
+			if (is_int($number) || is_float($number)) {
+				++$count;
+				$sum += $number;
+			}
 		}
 
 		return $count ? ($sum / $count) : null;
@@ -519,7 +521,7 @@ firstWhere($key, $operator, $value): Returns the first item matching a key-value
         }
 
         return function ($item, $key = null) use ($value) {
-            return is_object($item) ? ($item->$value ?? null) : ($item[$value] ?? null);
+            return is_object($item) ? $item->{$value} : $item[$value];
         };
     }
 
