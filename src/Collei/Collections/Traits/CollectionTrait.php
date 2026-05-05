@@ -6,6 +6,7 @@ use Closure;
 use Countable;
 use IteratorAggregate;
 use JsonSerializable;
+use Stringable;
 use Traversable;
 use ArgumentCountError;
 use Exception;
@@ -19,6 +20,7 @@ use Collei\Collections\Exceptions\ItemNotFoundException;
 use Collei\Support\Arr;
 use Collei\Support\Arrayable;
 use Collei\Support\Jsonable;
+use Collei\Support\WhereFilter;
 
 trait CollectionTrait
 {
@@ -95,6 +97,16 @@ trait CollectionTrait
 	public static function fromArray(array $items)
 	{
 		return static::make($items);
+	}
+
+	public function getCachingIterator(int $flags = CachingIterator::CALL_TOSTRING)
+	{
+		return new CachingIterator($this->getIterator(), $flags);
+	}
+
+	public function flatMap(callable $callback)
+	{
+		return $this->map($callback)->collapse();
 	}
 
 	/**
@@ -296,8 +308,6 @@ trait CollectionTrait
 		return $this->reduce($summer, 0);
 	}
 
-	######################################### Extraction & Access
-
 	public function each($callback)
 	{
 		foreach ($this->items as $key => $item) if (false === $callback($item, $key)) {
@@ -346,6 +356,13 @@ trait CollectionTrait
 		}
 
 		return false;
+	}
+
+	public function forPage(int $page, int $perPage)
+	{
+		$offset = max(0, ($page - 1) * $perPage);
+
+		return $this->slice($offset, $perPage);
 	}
 
 	public function value(string $key, $default = null)
@@ -491,19 +508,93 @@ trait CollectionTrait
 		return $this->unless($this->isNotEmpty(), $callback, $default);
 	}
 
+	public function unique($key = null, bool $strict = false)
+	{
+		$callback = $this->valueRetriever($key);
+
+		$exists = [];
+
+		return $this->reject(function($item, $key) use ($callback, $strict, &$exists){
+			if (in_array($id = $callback($item, $key), $exists, $strict)) {
+				return true;
+			}
+
+			$exists[] = $id;
+		});
+	}
+
+	public function uniqueStrict($key = null)
+	{
+		return $this->unique($key, true);
+	}
+
+	public function where($key, $operator = null, $value = null)
+	{
+		return $this->filter(WhereFilter::make(...func_get_args()));
+	}
+
+	public function whereStrict($key, $value)
+	{
+		return $this->where($key, '===', $value);
+	}
+
+	public function whereNull($key = null)
+	{
+		return $this->whereStrict($key, null);
+	}
+
+	public function whereNotNull($key = null)
+	{
+		return $this->where($key, '!==', null);
+	}
+
+	public function whereIn($key, $values, $strict = false)
+	{
+		$values = Arr::getArrayableItems($values);
+
+		return $this->filter(function ($item) use ($key, $values, $strict) {
+			return in_array(Arr::get($item, $key), $values, $strict);
+		});
+	}
+
+	public function whereInStrict($key, $values)
+	{
+		return $this->whereIn($key, $values, true);
+	}
+
+	public function whereNotIn($key, $values, $strict = false)
+	{
+		$values = Arr::getArrayableItems($values);
+
+		return $this->filter(function ($item) use ($key, $values, $strict) {
+			return ! in_array(Arr::get($item, $key), $values, $strict);
+		});
+	}
+
+	public function whereNotInStrict($key, $values)
+	{
+		return $this->whereNotIn($key, $values, true);
+	}
+
+	public function whereBetween($key, $values)
+	{
+		return $this->where($key, '>=', reset($values))
+					->where($key, '<=', end($values));
+	}
+
+	public function whereNotBetween($key, $values)
+	{
+		return $this->filter(function($item) use ($key, $values){
+			$retrieved = Arr::get($item, $key);
+
+			return ($retrieved < reset($values)) || ($retrieved > end($values));
+		});
+	}
 
 /**
-where($key, $operator, $value): Filters items by a key-value condition. 
-whereStrict($key, $value): Filters by key-value using strict comparison. 
-whereBetween($key, $values): Filters items where a key's value is within a range. 
-whereIn($key, $values): Filters items where a key's value is in an array. 
-whereNotIn($key, $values): Filters items where a key's value is not in an array. 
-whereNull($key): Filters items where a key's value is null. 
-whereNotNull($key): Filters items where a key's value is not null. 
 whereInstanceOf($className): Filters items by instance type.
 firstWhere($key, $operator, $value): Returns the first item matching a key-value condition.
 **/
-
 
     protected function useAsCallable($callback)
     {
