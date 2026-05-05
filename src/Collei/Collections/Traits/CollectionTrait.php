@@ -99,6 +99,11 @@ trait CollectionTrait
 		return static::make($items);
 	}
 
+	public static function fromJson(string $json, int $depth = 512, int $options = 0)
+	{
+		return new static(json_decode($json, true, $depth, $options));
+	}
+
 	public function getCachingIterator(int $flags = CachingIterator::CALL_TOSTRING)
 	{
 		return new CachingIterator($this->getIterator(), $flags);
@@ -591,10 +596,42 @@ trait CollectionTrait
 		});
 	}
 
-/**
-whereInstanceOf($className): Filters items by instance type.
-firstWhere($key, $operator, $value): Returns the first item matching a key-value condition.
-**/
+	public function whereInstanceOf(string|array $class)
+	{
+		return $this->filter(function($item) use ($class){
+			if (is_array($class)) {
+				foreach ($class as $type) if ($item instanceof $type) {
+					return true;
+				}
+
+				return false;
+			}
+
+			return $item instanceof $class;
+		});
+	}
+
+	public function firstWhere($key, $operator = null, $value = null)
+	{
+		$this->first(WhereFilter::make(...func_get_args()));
+	}
+
+	public function some($key, $operator = null, $value = null)
+	{
+		$this->contains(...func_get_args());
+	}
+
+	public function hasMany($key, $operator = null, $value = null)
+	{
+		$filter = (func_num_args() > 1)
+			? WhereFilter::make(...func_get_args())
+			: $key;
+
+		return $this->unless($filter == null)
+					->filter($filter)
+					->take(2)
+					->count() === 2;
+	}
 
     protected function useAsCallable($callback)
     {
