@@ -2,8 +2,13 @@
 namespace Collei\Support;
 
 use ArrayAccess;
-use InvalidArgumentException;
 use Closure;
+use InvalidArgumentException;
+use JsonSerializable;
+use Traversable;
+use WeakMap;
+use Collei\Collections\CollectionInterface;
+
 
 /**
  * Reunites array helper functions
@@ -1278,5 +1283,62 @@ abstract class Arr
 		};
 
 		return iterator_to_array($generator, true);
-	} 
+	}
+
+	/**
+	 * Retrieves an array from the argument or wrap it on array.
+	 * 
+	 * @param mixed $items
+	 * @return array 
+	 */
+	public static function getArrayableItems($items)
+	{
+		return (is_null($items) || is_scalar($items) || is_enum($items))
+			? static::wrap($items)
+			: static::from($items);
+	}
+
+	/**
+	 * Retrieves an array from a iterable/countable/generator/collection.
+	 * 
+	 * @param mixed $items
+	 * @return array
+	 * @throws InvalidArgumentException for scalar values and other non-array-convertibles
+	 */
+	public static function from($items)
+	{
+		if (is_array($items)) {
+			return $items;
+		}
+
+		if ($items instanceof CollectionInterface) {
+			return $items->all();
+		}
+
+		if ($items instanceof Arrayable) {
+			return $items->toArray();
+		}
+
+		if ($items instanceof WeakMap) {
+			return iterator_to_array($items, false);
+		}
+
+		if ($items instanceof Traversable) {
+			return iterator_to_array($items);
+		}
+
+		if ($items instanceof Jsonable) {
+			return json_decode($items, true);
+		}
+
+		if ($items instanceof JsonSerializable) {
+			return (array) $items->jsonSerialize();
+		}
+
+		if (is_object($items)) {
+			return (array) $items;
+		}
+
+		throw new InvalidArgumentException('Items cannot be represented by a scalar value');
+	}
 }
