@@ -379,11 +379,47 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 		return new static(array_map(null, $this->values(), array_values($items)));
 	}
 
+	public function contains($key, $operator = null, $value = null)
+	{
+		if (func_num_args() === 1) {
+			if ($this->useAsCallable($key)) {
+				return array_any($this->items, $key);
+			}
+
+			return in_array($key, $this->items);
+		}
+
+		return $this->contains(
+			WhereFilter::make(...func_get_args())
+		);
+	}
+
+	public function containsStrict($key, $value = null)
+	{
+		if (func_num_args() === 2) {
+			return $this->contains(function($item) use ($key, $value){
+				return Arr::get($item, $key) === $value;
+			});
+		}
+
+		if ($this->useAsCallable($key)) {
+			return ! is_null($this->first($key));
+		}
+
+		return in_array($key, $this->items, true);
+	}
+
+	public function doesntContain($key, $operator = null, $value = null)
+	{
+		return ! $this->contains(...func_get_args());
+	}
+
+	public function doesntContainStrict($key, $operator = null, $value = null)
+	{
+		return ! $this->containsStrict(...func_get_args());
+	}
 
 /**
-contains($key, $value = null): Checks if an item exists (loose comparison). 
-containsStrict($key, $value = null): Checks if an item exists (strict comparison). 
-doesntContain($key, $value = null): The inverse of contains. 
 diff($items): Returns values not present in the given items.
 diffAssoc($items): Returns key-value pairs not present in the given items. 
 diffKeys($items): Returns items with keys not present in the given items.
