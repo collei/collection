@@ -1345,4 +1345,63 @@ abstract class Arr
 
         throw new InvalidArgumentException('Items cannot be represented by a scalar value');
     }
+
+    /**
+     * Performs a crossJoin operation with passed arrays,
+     * returning all possible cominations.
+     * 
+     * @param array ...$arrays
+     * @return array
+     */
+    public static function crossJoin(array ...$arrays)
+    {
+        $results = [[]];
+
+        foreach ($arrays as $index => $array) {
+            $append = [];
+
+            foreach ($results as $product) {
+                foreach ($array as $key => $item) {
+                    $product[$index] = $item;
+
+                    $append[] = $product;
+                }
+            }
+
+            $results = $append;
+        }
+
+        return $results;
+    }
+
+    /**
+     * Performs a crossJoin operation with passed arrays,
+     * saving keys while returning all possible cominations.
+     * 
+     * Every item is returned as a single-key array in
+     * the [$key => $value] form.
+     * 
+     * @param array ...$arrays
+     * @return array
+     */
+    public static function crossJoinSavingKeys(array ...$arrays)
+    {
+        $results = [[]];
+
+        foreach ($arrays as $index => $array) {
+            $append = [];
+
+            foreach ($results as $product) {
+                foreach ($array as $key => $item) {
+                    $product[$index] = new KeyedValue($item, $key);
+
+                    $append[] = $product;
+                }
+            }
+
+            $results = $append;
+        }
+
+        return $results;
+    }
 }
