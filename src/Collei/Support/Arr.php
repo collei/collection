@@ -1378,8 +1378,7 @@ abstract class Arr
      * Performs a crossJoin operation with passed arrays,
      * saving keys while returning all possible cominations.
      * 
-     * Every item is returned as a single-key array in
-     * the [$key => $value] form.
+     * Every item is returned as a KeyedValue instance.
      * 
      * @param array ...$arrays
      * @return array
