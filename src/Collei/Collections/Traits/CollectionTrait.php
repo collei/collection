@@ -330,7 +330,7 @@ trait CollectionTrait
 
 		$generator = function() use ($callback) {
 			foreach ($this->items as $key => $value) {
-				$side = $callback($value, $key) ? 'first' : 'last';
+				$side = $callback($value, $key) ? 'left' : 'right';
 
 				yield $side => [$key, $value];
 			}
