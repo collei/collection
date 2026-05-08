@@ -1056,7 +1056,7 @@ trait CollectionTrait
 	 */
 	public function firstWhere($key, $operator = null, $value = null)
 	{
-		$this->first(WhereFilter::make(...func_get_args()));
+		return $this->first(WhereFilter::make(...func_get_args()));
 	}
 
 	/**
@@ -1070,7 +1070,7 @@ trait CollectionTrait
 	 */
 	public function some($key, $operator = null, $value = null)
 	{
-		$this->contains(...func_get_args());
+		return $this->contains(...func_get_args());
 	}
 
 	/**
