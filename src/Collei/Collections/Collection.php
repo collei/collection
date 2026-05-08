@@ -877,6 +877,14 @@ except($keys): Returns all items except those with specified keys.
 		})->sort()->keys()->all();
     }
 
+	/**
+	 * Returns the item that comes after $value, if $value exists.
+	 * Returns null if $value is not found or it is the last.
+	 * 
+	 * @param mixed $value
+	 * @param bool $strict = false
+	 * @return mixed
+	 */
 	public function after($value, bool $strict = false)
 	{
 		$targetKey = array_search($value, $this->items, $strict);
@@ -900,6 +908,14 @@ except($keys): Returns all items except those with specified keys.
 		return null;
 	}
 	
+	/**
+	 * Returns the item that comes before $value, if $value exists.
+	 * Returns null if $value is not found or it is the first.
+	 * 
+	 * @param mixed $value
+	 * @param bool $strict = false
+	 * @return mixed
+	 */
 	public function before($value, bool $strict = false)
 	{
 		$targetKey = array_search($value, $this->items, $strict);
@@ -921,6 +937,13 @@ except($keys): Returns all items except those with specified keys.
 		return null;
 	}
 
+	/**
+	 * Groups items by key or using $callback, returning a new
+	 * collection.
+	 * 
+	 * @param string|Closure $callback = null
+	 * @return static
+	 */
 	public function groupBy($callback = null)
 	{
 		$callback = $this->valueRetriever($callback);
