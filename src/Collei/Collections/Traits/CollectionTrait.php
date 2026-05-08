@@ -376,7 +376,7 @@ trait CollectionTrait
 	{
 		$callback = function($carry, $next) {
 			if (is_callable($next)) {
-				return new $next($carry);
+				return $next($carry);
 			}
 
 			return $carry;
