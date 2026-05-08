@@ -963,6 +963,13 @@ except($keys): Returns all items except those with specified keys.
 		return new static($groups);
 	}
 
+	/**
+	 * Returns the collection items as a string with an optional $glue.
+	 * 
+	 * @param string|Closure $value
+	 * @param string $glue = null
+	 * @return string
+	 */
 	public function implode(string|Closure $value, string $glue = null)
 	{
 		if (is_null($glue)) {
