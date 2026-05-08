@@ -1403,4 +1403,34 @@ abstract class Arr
 
         return $results;
     }
+
+    /**
+     * Performs a crossJoin operation with passed arrays,
+     * saving keys while returning all possible cominations.
+     * 
+     * Every item is returned as a array of format [$key => $value].
+     * 
+     * @param array ...$arrays
+     * @return array
+     */
+    public static function crossJoinWithKeys(array ...$arrays)
+    {
+        $results = [[]];
+
+        foreach ($arrays as $index => $array) {
+            $append = [];
+
+            foreach ($results as $product) {
+                foreach ($array as $key => $item) {
+                    $product[$index] = [$key => $item];
+
+                    $append[] = $product;
+                }
+            }
+
+            $results = $append;
+        }
+
+        return $results;
+    }
 }
