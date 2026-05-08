@@ -113,6 +113,13 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 		return $this->items;
 	}
 
+	/**
+	 * Returns a collection of chunks of this collection.
+	 * 
+	 * @param int $size
+	 * @param bool $preserveKeys = false
+	 * @return static
+	 */
 	public function chunk(int $size, bool $preserveKeys = false)
 	{
 		$collections = new static();
@@ -162,6 +169,14 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 		return $result;
 	}
 
+	/**
+	 * Collapses a collection of collections in a plain collection
+	 * while preserving keys.
+	 * 
+	 * Note the same keys will retain only the last of same key.
+	 * 
+	 * @return static
+	 */
 	public function collapseWithKeys()
 	{
 		$result = new static();
@@ -185,6 +200,14 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 		return $result;
 	}
 
+	/**
+	 * Combine this collection with an array or another collection,
+	 * generating a brand new collection with the items of this collection
+	 * as keys and the elements of the given array or collection as values.
+	 * 
+	 * @param array|static $values
+	 * @return static
+	 */
 	public function combine($values)
 	{
 		if ($values instanceof static) {
@@ -206,6 +229,13 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 		return new static(array_combine(array_keys($this->items), array_values($values)));
 	}
 
+	/**
+	 * Returns a collection resulting from the concat of items of this
+	 * collection with elements of the given array or collection.
+	 * 
+	 * @param array|static $values
+	 * @return static
+	 */
 	public function concat($values)
 	{
 		if ($values instanceof static) {
@@ -223,11 +253,22 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 		return new static($this->items + $values);
 	}
 
+	/**
+	 * Return a collection with the keys as values and the values as keys.
+	 * 
+	 * @return static
+	 */
 	public function flip()
 	{
 		return new static(array_combine(array_values($this->items), array_keys($this->items)));
 	}
 
+	/**
+	 * Return a collection with the given field value as key.
+	 * 
+	 * @param string|Closure $key
+	 * @return static
+	 */
 	public function keyBy(string|Closure $key)
 	{
 		$key = $this->valueRetriever($key);
@@ -253,16 +294,34 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 		return $result;
 	}
 
+	/**
+	 * Performs a map() operation, including the keys in the arguments.
+	 * 
+	 * @param Closure $callback
+	 * @return static 
+	 */
 	public function mapWithKeys(Closure $callback)
 	{
 		return new static(array_map($callback, $this->items, array_keys($this->items)));
 	}
 
+	/**
+	 * Tells if the underlying array is a list (i.e., is associative).
+	 * 
+	 * @return bool
+	 */
 	public function isList()
 	{
 		return array_is_list($this->items);
 	}
 
+	/**
+	 * Returns a new collection with the itens from this collection merged
+	 * with the given $items using array_merge().
+	 * 
+	 * @param array|static
+	 * @return static
+	 */
 	public function merge($items)
 	{
 		return new static(
@@ -272,6 +331,13 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 		);
 	}
 
+	/**
+	 * Returns a new collection with the itens from this collection merged
+	 * with the given $items using array_merge_recursive().
+	 * 
+	 * @param array|static
+	 * @return static
+	 */
 	public function mergeRecursive($items)
 	{
 		return new static(
@@ -281,6 +347,13 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 		);
 	}
 
+	/**
+	 * Prepends an item into this collection.
+	 * 
+	 * @param mixed $value
+	 * @param int|string|null $key
+	 * @return $this
+	 */
 	public function prepend($value, $key = null)
 	{
 		if (! is_null($key)) {
@@ -298,6 +371,12 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 		return $this;
 	}
 
+	/**
+	 * Pushes an item at the end of this collection.
+	 * 
+	 * @param mixed $value
+	 * @return $this
+	 */
 	public function push($value)
 	{
 		$this->items[] = $value;
@@ -305,6 +384,13 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 		return $this;
 	}
 
+	/**
+	 * Puts a keyed item onto this collection.
+	 * 
+	 * @param int|string $key
+	 * @param mixed $value
+	 * @return $this
+	 */
 	public function put(int|string $key, $value)
 	{
 		$this->items[$key] = $value;
@@ -312,16 +398,34 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 		return $this;
 	}
 
+	/**
+	 * Returns a new collection with all items reversed.
+	 * 
+	 * @return static
+	 */
 	public function reverse()
 	{
 		return new static(array_reverse($this->items));
 	}
 
+	/**
+	 * Returns a new collection with all items shuffled.
+	 * It relies on random_int().
+	 * 
+	 * @return static
+	 */
 	public function shuffle()
 	{
 		return new static(Arr::shuffle($this->items()));
 	}
 
+	/**
+	 * Returns a collection of chunks resulting from a 'sliding' window.
+	 * 
+	 * @param int $size
+	 * @param int $step = 1
+	 * @return static
+	 */
 	public function sliding(int $size, int $step = 1)
 	{
 		[$collection, $length, $offset] = [$this->values(), $this->count(), 0];
@@ -350,6 +454,12 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 		return new static($chunks);
 	}
 
+	/**
+	 * Transforms all items of this collection using $callback.
+	 * 
+	 * @param Closure $callback
+	 * @retrun $this;
+	 */
 	public function transform(Closure $callback)
 	{
 		foreach ($this->items as $key => $value) {
@@ -359,26 +469,60 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 		return $this;
 	}
 
+	/**
+	 * Return a collection resulted from union of items
+	 * of this collection with the given $items.
+	 * 
+	 * @param iterable $items
+	 * @return static
+	 */
 	public function union(iterable $items)
 	{
 		return new static($this->items + $items);
 	}
 
+	/**
+	 * Returns a new collection with all keys reset.
+	 * 
+	 * @return static
+	 */
 	public function values()
 	{
 		return new static(array_values($this->items));
 	}
 
-	public function map(Closure $callback)
+	/**
+	 * Performs map() on this collection items, returning the
+	 * resulting collection.
+	 * 
+	 * @param callable $callback
+	 * @return static
+	 */
+	public function map(callable $callback)
 	{
 		return new static(array_map($callback, $this->items));
 	}
 
+	/**
+	 * Performs zip() on this collection with the given $items,
+	 * returning the resulting collection.
+	 * 
+	 * @param iterable $items
+	 * @return static
+	 */
 	public function zip(iterable $items)
 	{
 		return new static(array_map(null, $this->values(), array_values($items)));
 	}
 
+	/**
+	 * Tells if the collection has any items according the criteria.
+	 * 
+	 * @param string|Closure $key
+	 * @param mixed $operator = null
+	 * @param mixed $value = null
+	 * @return bool
+	 */
 	public function contains($key, $operator = null, $value = null)
 	{
 		if (func_num_args() === 1) {
@@ -394,6 +538,13 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 		);
 	}
 
+	/**
+	 * Tells strictly if the collection has any item with such value.
+	 * 
+	 * @param string|Closure $key
+	 * @param mixed $value = null
+	 * @return bool
+	 */
 	public function containsStrict($key, $value = null)
 	{
 		if (func_num_args() === 2) {
@@ -409,11 +560,27 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 		return in_array($key, $this->items, true);
 	}
 
+	/**
+	 * Tells if the collection has no items according the criteria.
+	 * 
+	 * @param string|Closure $key
+	 * @param mixed $operator = null
+	 * @param mixed $value = null
+	 * @return bool
+	 */
 	public function doesntContain($key, $operator = null, $value = null)
 	{
 		return ! $this->contains(...func_get_args());
 	}
 
+	/**
+	 * Tells strictly if the collection has no items according the criteria.
+	 * 
+	 * @param string|Closure $key
+	 * @param mixed $operator = null
+	 * @param mixed $value = null
+	 * @return bool
+	 */
 	public function doesntContainStrict($key, $operator = null, $value = null)
 	{
 		return ! $this->containsStrict(...func_get_args());
