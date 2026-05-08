@@ -267,7 +267,17 @@ trait CollectionTrait
 		});
 	}
 
-	public function mapSpread(Closure $callback)
+	/**
+	 * Map the collection items while making their members/properties
+	 * available to the $callback as separate arguments.
+	 * 
+	 * @param Closure $callback
+	 * @param bool $ignoreNonConformingItems = false
+	 * @return static
+	 * @throws Collei\Collections\Exceptions\CollectionException 
+	 * 		unless $ignoreNonConformingItems = true
+	 */
+	public function mapSpread(Closure $callback, bool $ignoreNonConformingItems = false)
 	{
 		return $this->map(function ($value) use ($callback) {
 			try {
