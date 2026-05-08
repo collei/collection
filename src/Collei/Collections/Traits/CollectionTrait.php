@@ -279,7 +279,7 @@ trait CollectionTrait
 	 */
 	public function mapSpread(Closure $callback, bool $ignoreNonConformingItems = false)
 	{
-		return $this->map(function ($value) use ($callback) {
+		return $this->map(function ($value) use ($callback, $ignoreNonConformingItems) {
 			try {
 				if (is_iterable($value)) {
 					return $callback(...$value);
@@ -288,6 +288,10 @@ trait CollectionTrait
 				}
 				//
 			} catch (ArgumentCountError $e) {
+				if ($ignoreNonConformingItems) {
+					return $value;
+				}
+
 				throw new CollectionException(
 					$this, 'The callback passed must have the same argument count equals the item\'s member count', 0, $e
 				);
