@@ -629,11 +629,25 @@ diffKeys($items): Returns items with keys not present in the given items.
 except($keys): Returns all items except those with specified keys.
 **/
 
+	/**
+	 * Filters the items using $callback, returning a new collection.
+	 *
+	 * @param Closure $callback
+	 * @return static
+	 */
 	public function filter(Closure $callback)
 	{
 		return new static(array_filter($this->items, $callback, ARRAY_FILTER_USE_BOTH));
 	}
 
+	/**
+	 * Returns the very first item in the collection that passes the
+	 * $callback test, or the first if no callback is given.
+	 * 
+	 * @param Closure $callback = null
+	 * @param mixed $default = null
+	 * @return mixed
+	 */
 	public function first(Closure $callback = null, $default = null)
 	{
 		if ($this->isEmpty()) {
@@ -655,6 +669,16 @@ except($keys): Returns all items except those with specified keys.
 		return $default ?? null;
 	}
 
+	/**
+	 * Returns the very first item in the collection that passes the
+	 * $callback test, or the first if no callback is given.
+	 * If no item is found, throws an exception.
+	 * 
+	 * @param Closure $callback = null
+	 * @param mixed $default = null
+	 * @return mixed
+	 * @throws Collei\Collections\Exceptions\ItemNotFoundException
+	 */
 	public function firstOrFail(Closure $callback = null)
 	{
 		$result = $this->first($callback);
@@ -666,6 +690,12 @@ except($keys): Returns all items except those with specified keys.
 		return $result;
 	}
 
+	/**
+	 * Removes an item from the collection.
+	 * 
+	 * @param int|string $key
+	 * @return $this
+	 */
 	public function forget(int|string $key)
 	{
 		unset($this->items[$key]);
@@ -673,16 +703,35 @@ except($keys): Returns all items except those with specified keys.
 		return $this;
 	}
 
+	/**
+	 * Retrieves an item by its key, if any.
+	 * 
+	 * @param int|string $key
+	 * @param mixed $default = null
+	 * @return mixed
+	 */
 	public function get(int|string $key, $default = null)
 	{
 		return $this->items[$key] ?? $default;
 	}
 
+	/**
+	 * Tells if a given item exists.
+	 * 
+	 * @param int|string $key
+	 * @return bool
+	 */
 	public function has(int|string $key)
 	{
 		return array_key_exists($key, $this->items);
 	}
 
+	/**
+	 * Tells if one of the given items does exist.
+	 * 
+	 * @param array $keys
+	 * @return bool
+	 */
 	public function hasAny(array $keys)
 	{
 		foreach ($keys as $key) if ($this->has($key)) {
@@ -692,6 +741,13 @@ except($keys): Returns all items except those with specified keys.
 		return false;
 	}
 
+	/**
+	 * Returns only the items corresponding to the given keys
+	 * and produces a new collection.
+	 * 
+	 * @param array $keys
+	 * @return static
+	 */
 	public function only(array $keys)
 	{
 		$result = [];
@@ -703,16 +759,37 @@ except($keys): Returns all items except those with specified keys.
 		return new static($result);
 	}
 
+	/**
+	 * Runs a search for the $value through the collection items
+	 * and returns its key, if it is found.
+	 * 
+	 * @param mixed $value
+	 * @param bool $strict = false
+	 * @return int|string|null
+	 */
 	public function search($value, bool $strict = false)
 	{
 		return array_search($value, $this->items, $strict);
 	}
 
+	/**
+	 * Returns the nuumber of items.
+	 * 
+	 * @return int
+	 */
 	public function count(): int
 	{
 		return count($this->items);
 	}
 
+	/**
+	 * Returns the number of itens in each group, according the passed
+	 * callback or given value key.
+	 * 
+	 * @param string|Closure $callback = null
+	 * @param bool $silentMode = false
+	 * @return static
+	 */
 	public function countBy($callback = null, bool $silentMode = false)
 	{
 		$callback = $this->valueRetriever($callback);
@@ -740,6 +817,12 @@ except($keys): Returns all items except those with specified keys.
 		return new static($counts);
 	}
 
+	/**
+	 * Returns the median of the items in this collection.
+	 * 
+	 * @param string|Closure $callback = null
+	 * @return mixed
+	 */
     public function median($callback = null)
     {
         if ($this->isEmpty()) {
@@ -765,6 +848,12 @@ except($keys): Returns all items except those with specified keys.
             : (($items[($count / 2) - 1] + $items[($count / 2)]) / 2.0);
     }
 
+	/**
+	 * Returns the mode of the items in this collection.
+	 * 
+	 * @param string|Closure $key = null
+	 * @return array
+	 */
     public function mode($key = null)
     {
         if ($this->isEmpty()) {
@@ -972,37 +1061,83 @@ except($keys): Returns all items except those with specified keys.
 		return new static($selected);
 	}
 
-	
+    /**
+     * Pluck an array of values from the collection.
+     *
+     * @param  string|array|int|null  $value
+     * @param  string|array|null  $key
+     * @return array
+     */
 	public function pluck($value, $key = null)
 	{
 		return new static(Arr::pluck($this->items, $value, $key));
 	}
 
+	/**
+	 * Pops a value from the end of the collection and returns it.
+	 * 
+	 * @return mixed
+	 */
 	public function pop()
 	{
 		return array_pop($this->items);
 	}
 
+	/**
+	 * Shifts a value off the beginning of the collection and returns it.
+	 * 
+	 * @return mixed
+	 */
 	public function shift()
 	{
 		return array_shift($this->items);
 	}
 
+	/**
+	 * Extracts a slice of the collection and returns it as collection.
+	 * 
+	 * @param int $offset
+	 * @param int $length = null
+	 * @param bool $preserveKeys = false
+	 * @return static
+	 */
 	public function slice(int $offset, int $length = null, $preserveKeys = false)
 	{
 		return new static(array_slice($this->items, $offset, $length, $preserveKeys));
 	}
 
+	/**
+	 * Removes a slice of the collection and replaces it with something else,
+	 * returning the result as collection.
+	 * 
+	 * @param int $offset
+	 * @param int $length = null
+	 * @param mixed $replacement = []
+	 * @return static
+	 */
 	public function splice(int $offset, int $length = null, $replacement = [])
 	{
 		return new static(array_splice($this->items, $offset, $length, $replacement));
 	}
 
+	/**
+	 * Returns a new collection with $count items skept.
+	 * 
+	 * @param int $count
+	 * @return static
+	 */
 	public function skip(int $count)
 	{
 		return $this->slice($count);
 	}
 
+	/**
+	 * Returns a new collection with only $limit items from
+	 * the beginning.
+	 * 
+	 * @param int $limit
+	 * @return static
+	 */
 	public function take(int $limit)
 	{
 		if ($limit < 0) {
@@ -1028,11 +1163,27 @@ crossJoin($items): Cross joins the collection with another.
 hasSole($key): Checks if a key exists and is the only item. 
 **/
 
+	/**
+	 * Pads a collection to the given size with an optional value.
+	 * 
+	 * @param int $size
+	 * @param mixed $value = null
+	 * @return static
+	 */
 	public function pad(int $size, $value = null)
 	{
 		return new static(array_pad($this->all(), $size, $value));
 	}
 
+	/**
+	 * Picks $number items randomly from the collection and returns
+	 * the result as a new collection. For just an only item, returns it.
+	 * It relies on random_int for randomness.
+	 * 
+	 * @param int $number = null
+	 * @param bool $preserveKeys = false
+	 * @return mixed|static 
+	 */
 	public function random($number = null, bool $preserveKeys = false)
 	{
 		if (is_null($number)) {
