@@ -141,11 +141,23 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 		return $collections;
 	}
 
+	/**
+	 * Returns a collection of chunks of this collection,
+	 * custom crafted by $callback.
+	 * 
+	 * @param Closure $callback
+	 * @return static
+	 */
 	public function chunkWhile(Closure $callback)
 	{
 		return null;
 	}
 
+	/**
+	 * Collapses a collection of collections in a plain collection.
+	 * 
+	 * @return static
+	 */
 	public function collapse()
 	{
 		$result = new static();
@@ -936,6 +948,7 @@ except($keys): Returns all items except those with specified keys.
 		return new static($selected);
 	}
 
+	
 	public function pluck($value, $key = null)
 	{
 		return new static(Arr::pluck($this->items, $value, $key));
