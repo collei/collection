@@ -1079,7 +1079,7 @@ trait CollectionTrait
 	 * @param string|Closure $key
 	 * @param mixed $operator = null
 	 * @param mixed $value = null
-	 * @return static
+	 * @return bool
 	 */
 	public function some($key, $operator = null, $value = null)
 	{
@@ -1093,7 +1093,7 @@ trait CollectionTrait
 	 * @param string|Closure $key
 	 * @param mixed $operator = null
 	 * @param mixed $value = null
-	 * @return static
+	 * @return bool
 	 */
 	public function hasMany($key, $operator = null, $value = null)
 	{
