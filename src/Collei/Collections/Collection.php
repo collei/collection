@@ -13,6 +13,7 @@ use Collei\Collections\Traits\ArrayAccessTrait;
 use Collei\Collections\Traits\CollectionTrait;
 use Collei\Collections\Exceptions\CollectionException;
 use Collei\Collections\Exceptions\ItemNotFoundException;
+use Collei\Collections\Exceptions\MultipleItemsFoundException;
 use Collei\Support\Arr;
 
 /**
@@ -622,12 +623,57 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 		return ! $this->containsStrict(...func_get_args());
 	}
 
-/**
-diff($items): Returns values not present in the given items.
-diffAssoc($items): Returns key-value pairs not present in the given items. 
-diffKeys($items): Returns items with keys not present in the given items.
-except($keys): Returns all items except those with specified keys.
-**/
+	/**
+	 * Return items without such given values.
+	 * 
+	 * @param Arrayable|iterable $items
+	 * @return static
+	 */
+	public function diff(Arrayable|iterable $items)
+	{
+		return new static(array_diff($this->items, Arr::getArrayableItems($items)));
+	}
+
+	/**
+	 * Return items without such given key-value pairs.
+	 * 
+	 * @param Arrayable|iterable $items
+	 * @return static
+	 */
+	public function diffAssoc(Arrayable|iterable $items)
+	{
+		return new static(array_diff_assoc($this->items, Arr::getArrayableItems($items)));
+	}
+
+	/**
+	 * Return items without such given keys.
+	 * 
+	 * @param Arrayable|iterable $items
+	 * @return static
+	 */
+	public function diffKeys(Arrayable|iterable $items)
+	{
+		return new static(array_diff_key($this->items, Arr::getArrayableItems($items)));
+	}
+
+	/**
+	 * Return all items of this collection except the given keys.
+	 * 
+	 * @param array|static $keys / string ...$keys
+	 * @return static
+	 */
+	public function except($keys)
+	{
+		if (is_null($keys)) {
+			return new static($this->items);
+		}
+
+		$keys = ($keys instanceof CollectionInterface)
+			? $keys->all()
+			: (is_array($keys) ? $keys : func_get_args());
+
+		return new static(Arr::except($this->items, $keys));
+	}
 
 	/**
 	 * Filters the items using $callback, returning a new collection.
@@ -1177,21 +1223,225 @@ except($keys): Returns all items except those with specified keys.
 		return $this->slice(0, abs($limit));
 	}
 
-	################################################# Sorting
+	/**
+	 * Return the sorted version of the collection.
+	 * 
+	 * @param mixed $callback = null
+	 * @return static
+	 */
+	public function sort($callback = null)
+	{
+		$items = $this->items;
 
-/**
-sort($callback = null): Sorts the collection.
-sortBy($callback, $options): Sorts by a specific key. 
-sortByDesc($callback, $options): Sorts by a specific key in descending order. 
-sortKeys($options): Sorts by keys.
-sortKeysDesc($options): Sorts by keys in descending order. 
-sortKeysUsing($callback): Sorts keys using a custom callback.
-**/
+		($callback && is_callable($callback))
+			? uasort($items, $callback)
+			: asort($items, $csallback ?? SORT_REGULAR);
 
-/**
-crossJoin($items): Cross joins the collection with another. 
-hasSole($key): Checks if a key exists and is the only item. 
-**/
+		return new static($items);
+	}
+
+	/**
+	 * Return the sorted version of the collection.
+	 * 
+	 * @param mixed $callback = null
+	 * @param int $options = SORT_REGULAR
+	 * @param bool $descending = false
+	 * @return static
+	 */
+	public function sortBy($callback, int $options = SORT_REGULAR, bool $descending = false)
+	{
+		if (is_array($callback) && ! is_callable($callback)) {
+			return $this->sortByMany($callback, $options);
+		}
+
+		$results = [];
+		$callback = $this->valueRetriever($callback);
+
+		// Reorder items logically by value while keeping them indexed
+		foreach ($this->items as $key => $item) {
+			$results[$key] = $callback($item, $key);
+		}
+
+		$descending ? arsort($results, $options) : asort($results, $options);
+
+		// Reorder items physically by assigning them by key
+		foreach (array_keys($results) as $key) {
+			$results[$key] = $this->items[$key];
+		}
+
+		return new static($results);
+	}
+
+    /**
+     * Sort the collection using multiple comparisons.
+     *
+     * @param array $comparisons = []
+     * @param int $options = SORT_REGULAR
+     * @return static
+     */
+    protected function sortByMany(array $comparisons = [], int $options = SORT_REGULAR)
+    {
+        $items = $this->items;
+
+        uasort($items, function ($a, $b) use ($comparisons, $options) {
+            foreach ($comparisons as $comparison) {
+                $comparison = Arr::wrap($comparison);
+
+                $prop = $comparison[0];
+
+                $ascending = Arr::get($comparison, 1, true) === true ||
+                             Arr::get($comparison, 1, true) === 'asc';
+
+                if (! is_string($prop) && is_callable($prop)) {
+                    $result = $prop($a, $b);
+                } else {
+                    $values = [Arr::get($a, $prop), Arr::get($b, $prop)];
+
+                    if (! $ascending) {
+                        $values = array_reverse($values);
+                    }
+
+                    if (($options & SORT_FLAG_CASE) === SORT_FLAG_CASE) {
+						$result = (($options & SORT_NATURAL) === SORT_NATURAL)
+							? strnatcasecmp($values[0], $values[1])
+							: strcasecmp($values[0], $values[1]);
+                    } else {
+						switch ($options) {
+							case SORT_NUMERIC:
+								$result = (int) $values[0] <=> (int) $values[1];
+								break;
+							case SORT_STRING:
+								$result = strcmp($values[0], $values[1]);
+								break;
+							case SORT_NATURAL:
+								$result = strnatcmp((string) $values[0], (string) $values[1]);
+								break;
+							case SORT_LOCALE_STRING:
+								$result = strcoll($values[0], $values[1]);
+								break;
+							default:
+								$result = $values[0] <=> $values[1];
+						}
+                    }
+                }
+
+                if ($result === 0) {
+                    continue;
+                }
+
+                return $result;
+            }
+        });
+
+        return new static($items);
+    }
+
+	/**
+	 * Return the descending-order-sorted version of the collection
+	 * using a callback
+	 * 
+	 * @param mixed $callback = null
+	 * @param int $options = SORT_REGULAR
+	 * @return static
+	 */
+	public function sortByDesc($callback, $options = SORT_REGULAR)
+	{
+		if (is_array($callback) && ! is_callable($callback)) {
+			foreach ($callback as $ix => $key) {
+				$comparison = Arr::wrap($key);
+				$comparison[1] = 'desc';
+				$callback[$ix] = $comparison;
+			}
+		}
+
+		return $this->sortBy($callback, $options, true);
+	}
+
+	/**
+	 * Return the sorted-by-key version of the collection.
+	 * 
+	 * @param mixed $callback = null
+	 * @param int $options = SORT_REGULAR
+	 * @param bool $descending = false
+	 * @return static
+	 */
+	public function sortKeys(int $options = SORT_REGULAR, bool $descending = false)
+	{
+		$items = $this->items;
+
+		$descending ? krsort($items, $options) : ksort($items, $options);
+
+		return new static($items);
+	}
+
+	/**
+	 * Return the descending-order sorted-by-key version of the collection.
+	 * 
+	 * @param mixed $callback = null
+	 * @param int $options = SORT_REGULAR
+	 * @param bool $descending = false
+	 * @return static
+	 */
+	public function sortKeysDesc(int $options = SORT_REGULAR)
+	{
+		return $this->sortKeys($options, true);
+	}
+
+	/**
+	 * Return the sorted-by-key version of the collection using a callback.
+	 * 
+	 * @param mixed $callback = null
+	 * @param int $options = SORT_REGULAR
+	 * @param bool $descending = false
+	 * @return static
+	 */
+	public function sortKeysUsing(callable $callback)
+	{
+		$items = $this->items;
+
+		uksort($items, $callback);
+
+		return new static($items);
+	}
+
+	/**
+	 * Returns all possible combinations of items of this collection
+	 * with the given items.
+	 * 
+	 * @param Arrayable|array $items
+	 * @return static
+	 */
+	public function crossJoin(Arrayable|array $items)
+	{
+		return new static(Arr::crossJoin($this->items, $items));
+	}
+	
+	/**
+	 * Returns all possible combinations of items of this collection
+	 * with the given items, preserving their keys.
+	 * Each item is returned as a single-item array in the format
+	 * [$key => $item].
+	 * 
+	 * @param Arrayable|array $items
+	 * @return static
+	 */
+	public function crossJoinWithKeys(Arrayable|array $items)
+	{
+		return new static(Arr::crossJoinWithKeys($this->items, $items));
+	}
+
+	/**
+	 * Returns all possible combinations of items of this collection
+	 * with the given items, preserving their keys.
+	 * Each item is packed into a KeyedValue instance.
+	 * 
+	 * @param Arrayable|array $items
+	 * @return static
+	 */
+	public function crossJoinSavingKeys(Arrayable|array $items)
+	{
+		return new static(Arr::crossJoinSavingKeys($this->items, $items));
+	}
 
 	/**
 	 * Pads a collection to the given size with an optional value.
@@ -1226,15 +1476,97 @@ hasSole($key): Checks if a key exists and is the only item.
 
 		return new static(Arr::random($this->items, $number, $preserveKeys));
 	}
-	
-/**
-replace($items): Replaces items in the collection.
-replaceRecursive($items): Recursively replaces items.
-sole($callback = null): Returns the sole item, throwing an exception if not exactly one.
-split($numberOfGroups): Splits the collection into a given number of groups. 
-**/
 
+	/**
+	 * Returns a copy of this collection with the items replaced by
+	 * these given ones.
+	 * 
+	 * @param Arrayable|array $items
+	 * @return static
+	 */
+	public function replace(Arrayable|array $items)
+	{
+		return new static(array_replace($this->items, Arr::getArrayableItems($items)));
+	}
 
+	/**
+	 * Returns a copy of this collection with the items recursively
+	 * replaced by these given ones.
+	 * 
+	 * @param Arrayable|array $items
+	 * @return static
+	 */
+	public function replaceRecursive(Arrayable|array $items)
+	{
+		return new static(array_replace_recursive($this->items, Arr::getArrayableItems($items)));
+	}
 
+	/**
+	 * Returns the only item of collection, throwing exception if
+	 * there is more than one or when no items found.
+	 * 
+	 * @param mixed $key = null
+	 * @param mixed $operator = null
+	 * @param mixed $value = null
+	 * @return mixed
+	 * @throws Collei\Collections\Exceptions\ItemNotFoundException
+	 * @throws Collei\Collections\Exceptions\MultipleItemsFoundException
+	 */
+	public function sole($key = null, $operator = null, $value = null)
+	{
+		$filter = (func_num_args() > 1)
+			? WhereFilter::make(...func_get_args())
+			: $key;
 
+		$items = $this->unless($filter == null)->filter($filter);
+
+		$count = $items->count();
+
+		if ($count === 0) throw new ItemNotFoundException();
+
+		if ($count > 1) throw new MultipleItemsFoundException();
+
+		return $items->first();
+	}
+
+	/**
+	 * Splits a collection in the given number of chunks.
+	 * 
+	 * @param int $numberOfGroups
+	 * @return static
+	 */
+	public function split(int $numberOfGroups)
+	{
+		if ($numberOfGroups < 1) {
+			throw new InvalidArgumentException('Number of groups should be at least 1');
+		}
+
+		if ($this->isEmpty()) {
+			return new static();
+		}
+
+		if ($numberOfGroups === 1) {
+			return new static($this->items);
+		}
+
+		$group = $groups = [];
+
+		$knife = $this->count() / $numberOfGroups;
+
+		$number = 1;
+
+		foreach ($this->items as $key => $item) {
+			if ($number % $knife === 0) {
+				$groups[] = new static($group);
+
+				$group = [];
+			}
+
+			$group[$key] = $value;
+		}
+
+		$groups[] = new static($group);
+
+		return new static($groups);
+	}
 }
