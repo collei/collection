@@ -150,7 +150,31 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 	 */
 	public function chunkWhile(Closure $callback)
 	{
-		return null;
+		$collections = new static();
+
+		[$first, $chunk] = [true, new static()];
+
+		foreach ($this->items as $key => $item) {
+			if ($first) {
+				$chunk[$key] = $item;
+
+				$first = false;
+
+				continue;
+			}
+
+			if (! $callback($item, $key, $chunk)) {
+				$collections[] = $chunk;
+
+				$chunk = new static();
+			}
+
+			$chunk[$key] = $item;
+		}
+
+		$collections[] = $chunk;
+
+		return $collections;
 	}
 
 	/**
