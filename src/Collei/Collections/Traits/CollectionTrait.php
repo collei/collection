@@ -532,8 +532,8 @@ trait CollectionTrait
 	 */
 	public function eachSpread(Closure $callback, bool $ignoreNonConformingItems = false)
 	{
-		try {
-			foreach ($this->items as $key => $item) {
+		foreach ($this->items as $key => $item) {
+			try {
 				if (is_iterable($value)) {
 					if (false === $callback(...$value)) {
 						break;
