@@ -141,6 +141,19 @@ trait CollectionTrait
 		return static::range(1, $number)->unless($callback == null)->map($callback);
 	}
 
+    /**
+     * Crafts a brand new collection using range() function.
+     * 
+     * @param mixed $start
+     * @param mixed $end
+     * @param int|float $step = 1
+     * @return static
+     */
+    public static function range($start, $end, int|float $step = 1)
+	{
+		return new static(range($start, $end, $step));
+	}
+
 	/**
 	 * Returns a brand new collection from the array.
 	 * 
@@ -1092,6 +1105,26 @@ trait CollectionTrait
 					->filter($filter)
 					->take(2)
 					->count() === 2;
+	}
+
+	/**
+	 * Returns if this collection has just one and only item according
+	 * to a where operation.
+	 *  
+	 * @param string|Closure $key
+	 * @param mixed $operator = null
+	 * @param mixed $value = null
+	 * @return bool
+	 */
+	public function hasSole($key, $operator = null, $value = null)
+	{
+		$filter = (func_num_args() > 1)
+			? WhereFilter::make(...func_get_args())
+			: $key;
+
+		return $this->unless($filter == null)
+					->filter($filter)
+					->count() === 1;
 	}
 
 	/**
