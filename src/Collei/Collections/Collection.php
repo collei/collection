@@ -332,6 +332,34 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 	}
 
 	/**
+	 * Performs a dictionary map on the colleciton.
+	 * Make sure $callback returns a pair, i.e., a single
+	 * array element in the form [key => value], so
+	 * this method may work properly.
+	 * 
+	 * @param Closure $callback
+	 * @return static
+	 */
+	public function mapToDictionary(Closure $callback)
+	{
+		$dictionary = [];
+
+		foreach ($this->items as $key => $item) {
+			$pair = $callback($item, $key);
+
+			[$key, $value] = Arr::unpair($pair);
+
+			if (! isset($dictionary[$key])) {
+				$dictionary[$key] = [];
+			}
+
+			$dictionary[$key][] = $value;
+		}
+
+		return new static($dictionary);
+	}
+
+	/**
 	 * Performs a map() operation, including the keys in the arguments.
 	 * 
 	 * @param Closure $callback
@@ -1205,6 +1233,48 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 	public function skip(int $count)
 	{
 		return $this->slice($count);
+	}
+
+	/**
+	 * Skips items until condition becomes true.
+	 * 
+	 * @param mixed $value
+	 * @return static
+	 */
+	public function skipUntil($value)
+	{
+		$callback = $this->useAsCallable($value) ? $value : $this->equality($value);
+
+		return $this->skipWhile($this->negate($callback));
+	}
+
+	/**
+	 * Skips items until condition becomes false.
+	 * 
+	 * @param mixed $value
+	 * @return static
+	 */
+	public function skipWhile($value)
+	{
+		$callback = $this->useAsCallable($value) ? $value : $this->equality($value);
+
+		$rest = new static();
+
+		$skipping = true;
+
+		foreach ($this->items as $key => $item) {
+			if ($skipping) {
+				if ($callback($item, $key)) {
+					continue;
+				} else {
+					$skipping = false;
+				}
+			}
+
+			$rest[$key] = $item;
+		}
+
+		return $rest;
 	}
 
 	/**
