@@ -1278,6 +1278,42 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 	}
 
 	/**
+	 * Takes items until condition becomes true.
+	 * 
+	 * @param mixed $value
+	 * @return static
+	 */
+	public function takeUntil($value)
+	{
+		$callback = $this->useAsCallable($value) ? $value : $this->equality($value);
+
+		$firsts = new static();
+
+		foreach ($this->items as $key => $item) {
+			if ($callback($item, $key)) {
+				break;
+			}
+
+			$firsts[$key] = $item;
+		}
+
+		return $firsts;
+	}
+
+	/**
+	 * Takes items until condition becames false.
+	 * 
+	 * @param mixed $value
+	 * @return static
+	 */
+	public function takeWhile($value)
+	{
+		$callback = $this->useAsCallable($value) ? $value : $this->equality($value);
+
+		return $this->takeUntil($this->negate($callback));
+	}
+
+	/**
 	 * Returns a new collection with only $limit items from
 	 * the beginning.
 	 * 
@@ -1309,6 +1345,21 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 
 		return new static($items);
 	}
+
+	/**
+	 * Return the desc-sorted version of the collection.
+	 * 
+	 * @param int $options = SORT_REGULAR
+	 * @return static
+	 */
+	public function sortDesc(int $options = SORT_REGULAR)
+	{
+		$items = $this->items;
+
+		arsort($items, $options);
+
+		return new static($items);
+	} 
 
 	/**
 	 * Return the sorted version of the collection.
@@ -1621,7 +1672,7 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 
 		$group = $groups = [];
 
-		$knife = $this->count() / $numberOfGroups;
+		$knife = intdiv($this->count(), $numberOfGroups);
 
 		$number = 1;
 
@@ -1638,5 +1689,52 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 		$groups[] = new static($group);
 
 		return new static($groups);
+	}
+
+	/**
+	 * Splits a collection into chunks.
+	 * 
+	 * @param int $numberOfGroups
+	 * @return static
+	 */
+	public function splitIn(int $numberOfGroups)
+	{
+		if ($numberOfGroups < 1) {
+			throw new InvalidArgumentException('Number of groups should be at least 1');
+		}
+
+		$intChunkSize = (int) ceil($this->count() / $numberOfGroups);
+
+		return $this->chunk($intChunkSize);
+	}
+
+	/**
+	 * Flatten a multidimensional array with keys in dot notation.
+	 * 
+	 * @return static
+	 */
+	public function flatten()
+	{
+		return $this->dot();
+	}
+
+	/**
+	 * Flatten a multidimensional array with keys in dot notation.
+	 * 
+	 * @return static
+	 */
+	public function dot()
+	{
+		return new static(Arr::dot($this->all()));
+	}
+
+	/**
+	 * Expands a dot notation array in a multidimensional array.
+	 * 
+	 * @return static
+	 */
+	public function undot()
+	{
+		return new static(Arr::undot($this->all()));
 	}
 }
