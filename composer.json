@@ -1,6 +1,6 @@
 {
     "name": "collei/collection",
-    "description": "Laravel-inpired Collection class and abilities.",
+    "description": "Laravel-customized and inspired Collection class and abilities for PHP versions lower than 8.3.",
     "type": "library",
     "license": "MIT",
     "authors": [
