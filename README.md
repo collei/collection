@@ -1,6 +1,6 @@
 # Collei Collection
 
-a Laravel-inspired Collection class and abilities.
+a Laravel-customized and inspired Collection class and abilities for PHP versions lower than 8.3.
 
 ## Requirements
 
