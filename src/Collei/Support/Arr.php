@@ -1433,4 +1433,31 @@ abstract class Arr
 
         return $results;
     }
+
+    /**
+     * Turn a value and key in a pair (i.e., array with a single value
+     * indexed by the key).
+     * 
+     * @param int|string $key
+     * @param mixed $value
+     * @return array
+     */
+    public static function pair(int|string $key, $value)
+    {
+        return [$key => $value];
+    }
+
+    /**
+     * Turn a pair (i.e., array with a single value indexed by the key)
+     * in a two-element array.
+     * 
+     * @param array $pair
+     * @return array
+     */
+    public static function unpair(array $pair)
+    {
+        $value = reset($pair);
+
+        return [key($pair), $value];
+    }
 }
