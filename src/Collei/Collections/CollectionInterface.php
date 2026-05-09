@@ -41,12 +41,12 @@ interface CollectionInterface
     /**
      * Crafts a brand new collection using range() function.
      * 
-     * @param mixed $start
-     * @param mixed $end
-     * @param int|float $step = 1
+     * @param int $start
+     * @param int $end
+     * @param int $step = 1
      * @return static
      */
-    public static function range($start, $end, int|float $step = 1);
+    public static function range(int $start, int $end, int $step = 1);
 
 	/**
 	 * Returns a brand new collection with zero or $number items a value
