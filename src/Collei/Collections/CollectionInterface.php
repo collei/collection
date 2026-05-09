@@ -407,16 +407,12 @@ interface CollectionInterface
 	 */
 	public function flatMap(callable $callback);
 
-
-
-
-
-
-
-
-
-
-
+	/**
+	 * Flatten a multidimensional array to an array with keys in dot notation.
+	 * 
+	 * @return static
+	 */
+	public function flatten();
 
 	/**
 	 * Return a collection with the keys as values and the values as keys.
@@ -966,15 +962,13 @@ interface CollectionInterface
 	 */
 	public function sortByDesc($callback, $options = SORT_REGULAR);
 
-
-
-
-
-
-
-
-
-
+	/**
+	 * Return the desc-sorted version of the collection.
+	 * 
+	 * @param int $options = SORT_REGULAR
+	 * @return static
+	 */
+	public function sortDesc(int $options = SORT_REGULAR);
 
 	/**
 	 * Return the sorted-by-key version of the collection.
@@ -1014,14 +1008,13 @@ interface CollectionInterface
 	 */
 	public function split(int $numberOfGroups);
 
-
-
-
-
-
-
-
-
+	/**
+	 * Splits a collection into chunks.
+	 * 
+	 * @param int $numberOfGroups
+	 * @return static
+	 */
+	public function splitIn(int $numberOfGroups);
 
 	/**
 	 * Returns the sum of all items.
@@ -1040,27 +1033,24 @@ interface CollectionInterface
 	 */
 	public function take(int $limit);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	/**
+	 * Takes items until condition becomes true.
+	 * 
+	 * @param mixed $value
+	 * @return static
+	 */
+	public function takeUntil($value);
 
 	/**
-	 * Calles the callback passing this collection and returns the collection.
+	 * Takes items until condition becames false.
+	 * 
+	 * @param mixed $value
+	 * @return static
+	 */
+	public function takeWhile($value);
+
+	/**
+	 * Calls the callback passing this collection and returns the collection.
 	 * 
 	 * @param Closure $callback
 	 */
@@ -1088,15 +1078,12 @@ interface CollectionInterface
 	 */
 	public function toPrettyJson();
 
-
-
-
-
-
-
-
-
-
+	/**
+	 * Expands a dot notation array in a multidimensional array.
+	 * 
+	 * @return static
+	 */
+	public function undot();
 
 	/**
 	 * Return a collection resulted from union of items
