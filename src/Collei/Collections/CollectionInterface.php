@@ -1,6 +1,9 @@
 <?php
 namespace Collei\Collections;
 
+use Closure;
+use Traversable;
+
 interface CollectionInterface
 {
 	/**
