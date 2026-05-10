@@ -387,7 +387,7 @@ trait CollectionTrait
 	 */
 	public function pipeThrough(array $pipes)
 	{
-		$callback = function($carry, $next) {
+		$transformer = function($carry, $next) {
 			if (is_callable($next)) {
 				return $next($carry);
 			}
