@@ -1177,12 +1177,19 @@ trait CollectionTrait
 	 * is equals the given value.
 	 * 
 	 * @param mixed $value
+	 * @param bool $strict = true
 	 * @return Closure
 	 */
-    protected function equality($value)
+    protected function equality($value, bool $strict = true)
     {
+		if ($strict) {
+			return function($item) use ($value) {
+				return $item === $value;
+			};
+		}
+
         return function($item) use ($value) {
-            return $item === $value;
+            return $item == $value;
         };
     }
 
