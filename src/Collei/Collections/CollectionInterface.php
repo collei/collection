@@ -501,53 +501,50 @@ interface CollectionInterface
 	 */
 	public function implode(string|Closure $value, string $glue = null);
 
+	/**
+	 * Returns the intersection of this collection with the given $items.
+	 * 
+	 * @param iterable|Arrayable $items
+	 * @return static
+	 */
+	public function intersect(iterable|Arrayable $items);
 
+	/**
+	 * Returns the intersection of this collection with the given $items while
+	 * preserving keys.
+	 * 
+	 * @param iterable|Arrayable $items
+	 * @return static
+	 */
+	public function intersectAssoc(iterable|Arrayable $items);
 
+	/**
+	 * Returns the intersection of this collection with the given $items
+	 * mediated by $callback.
+	 * 
+	 * @param iterable|Arrayable $items
+	 * @param callable $callback
+	 * @return static
+	 */
+	public function intersectUsing(iterable|Arrayable $items, callable $callback);
 
+	/**
+	 * Returns the intersection of this collection with the given $items
+	 * mediated by $callback while preserving keys.
+	 * 
+	 * @param iterable|Arrayable $items
+	 * @param callable $callback
+	 * @return static
+	 */
+	public function intersectAssocUsing(iterable|Arrayable $items, callable $callback);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	/**
+	 * Returns the intersection of this collection with the given $items by their keys.
+	 * 
+	 * @param iterable|Arrayable $items
+	 * @return static
+	 */
+	public function intersectByKeys(iterable|Arrayable $items);
 
 	/**
 	 * Tells if the collection is empty.
