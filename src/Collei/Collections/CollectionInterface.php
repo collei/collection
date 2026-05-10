@@ -239,15 +239,14 @@ interface CollectionInterface
 	 */
 	public function diffAssoc(Arrayable|iterable $items);
 
-
-
-
-
-
-
-
-
-
+	/**
+	 * Return items not present among such $items using a $callback test.
+	 * 
+	 * @param Arrayable|iterable $items
+	 * @param Closure $callback
+	 * @return static
+	 */
+	public function diffAssocUsing(Arrayable|iterable $items, Closure $callback);
 
 	/**
 	 * Return items without such given keys.
@@ -257,27 +256,23 @@ interface CollectionInterface
 	 */
 	public function diffKeys(Arrayable|iterable $items);
 
+	/**
+	 * Return items whose keys are not present among such $keys using a $callback test.
+	 * 
+	 * @param Arrayable|iterable $items
+	 * @param Closure $callback
+	 * @return static
+	 */
+	public function diffKeysUsing(Arrayable|iterable $items, Closure $callback);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	/**
+	 * Return items without such given values.
+	 * 
+	 * @param Arrayable|iterable $items
+	 * @param Closure $callback
+	 * @return static
+	 */
+	public function diffUsing(Arrayable|iterable $items, Closure $callback);
 
 	/**
 	 * Tells if the collection has no items according the criteria.
@@ -296,27 +291,22 @@ interface CollectionInterface
 	 */
 	public function dump();
 
+	/**
+	 * Return a collection of duplicate items from this collection.
+	 * 
+	 * @param string|Closure $callback = null
+	 * @param bool $strict = false
+	 * @return static
+	 */
+	public function duplicates(string|Closure $callback = null, bool $strict = false);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	/**
+	 * Return a collection of duplicate items from this collection.
+	 * 
+	 * @param string|Closure $callback = null
+	 * @return static
+	 */
+	public function duplicatesStrict(string|Closure $callback = null);
 
 	/**
 	 * Runs the callback for each $item of the collection while passing
