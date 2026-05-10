@@ -129,14 +129,8 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 			return $collections;
 		}
 
-		$chunks = function() use ($size, $preserveKeys) {
-			foreach (array_chunk($this->items, $size, $preserveKeys) as $chunk) {
-				yield new static($chunk);
-			}
-		};
-
-		foreach ($chunks() as $chunk) {
-			$collections[] = $chunk;
+		foreach (array_chunk($this->items, $size, $preserveKeys) as $chunk) {
+			$collections[] = new static($chunk);
 		}
 
 		return $collections;
@@ -187,20 +181,14 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 	{
 		$result = new static();
 
-		$generator = function() {
-			foreach ($this->items as $value) {
-				if (is_array($value)) {
-					foreach ((new static($value))->collapse()->values() as $subvalue) {
-						yield $subvalue;
-					}
-				} else {
-					yield $value;
+		foreach ($this->items as $value) {
+			if (is_array($value)) {
+				foreach ((new static($value))->collapse()->values() as $subvalue) {
+					$result[] = $subvalue;
 				}
+			} else {
+				$result[] = $value;
 			}
-		};
-
-		foreach ($generator() as $item) {
-			$result[] = $item;
 		}
 
 		return $result;
@@ -218,20 +206,14 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 	{
 		$result = new static();
 
-		$generator = function() {
-			foreach ($this->items as $key => $value) {
-				if (is_array($value)) {
-					foreach ((new static($value))->collapseWithKeys()->all() as $subkey => $subvalue) {
-						yield $subkey => $subvalue;
-					}
-				} else {
-					yield $key => $value;
+		foreach ($this->items as $key => $value) {
+			if (is_array($value)) {
+				foreach ((new static($value))->collapseWithKeys()->all() as $subkey => $subvalue) {
+					$result[$subkey] = $subvalue;
 				}
+			} else {
+				$result[$key] = $value;
 			}
-		};
-
-		foreach ($generator() as $key => $item) {
-			$result[$key] = $item;
 		}
 
 		return $result;
@@ -308,24 +290,20 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 	 */
 	public function keyBy(string|Closure $key)
 	{
-		$key = $this->valueRetriever($key);
-
-		$generator = function() use ($key) {
-			$idx = 0;
-
-			foreach ($this->items as $value) {
-				$k = $key($value) ?? $idx;
-
-				++$idx;
-
-				yield $k => $value;
-			}
-		};
-
+		$callback = $this->valueRetriever($key);
 		$result = new static();
+		$index = 0;
 
-		foreach ($generator() as $k => $v) {
-			$result[$k] = $v;
+		foreach ($this->items as $value) {
+			$k = $callback($value);
+			
+			if (is_null($k)) {
+				$k = $index;
+
+				++$index;
+			}
+
+			$result[$k] = $value;
 		}
 
 		return $result;
