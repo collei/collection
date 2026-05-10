@@ -761,6 +761,66 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 	}
 
 	/**
+	 * Returns the intersection of this collection with the given $items.
+	 * 
+	 * @param iterable|Arrayable $items
+	 * @return static
+	 */
+	public function intersect(iterable|Arrayable $items)
+	{
+		return new static(array_intersect($this->items, Arr::getArrayableItems($items)));
+	}
+
+	/**
+	 * Returns the intersection of this collection with the given $items while
+	 * preserving keys.
+	 * 
+	 * @param iterable|Arrayable $items
+	 * @return static
+	 */
+	public function intersectAssoc(iterable|Arrayable $items)
+	{
+		return new static(array_intersect_assoc($this->items, Arr::getArrayableItems($items)));
+	}
+
+	/**
+	 * Returns the intersection of this collection with the given $items
+	 * mediated by $callback.
+	 * 
+	 * @param iterable|Arrayable $items
+	 * @param callable $callback
+	 * @return static
+	 */
+	public function intersectUsing(iterable|Arrayable $items, callable $callback)
+	{
+		return new static(array_uintersect($this->items, Arr::getArrayableItems($items), $callback));
+	}
+
+	/**
+	 * Returns the intersection of this collection with the given $items
+	 * mediated by $callback while preserving keys.
+	 * 
+	 * @param iterable|Arrayable $items
+	 * @param callable $callback
+	 * @return static
+	 */
+	public function intersectAssocUsing(iterable|Arrayable $items, callable $callback)
+	{
+		return new static(array_uintersect_assoc($this->items, Arr::getArrayableItems($items), $callback));
+	}
+
+	/**
+	 * Returns the intersection of this collection with the given $items by their keys.
+	 * 
+	 * @param iterable|Arrayable $items
+	 * @return static
+	 */
+	public function intersectByKeys(iterable|Arrayable $items)
+	{
+		return new static(array_intersect_key($this->items, Arr::getArrayableItems($items)));
+	}
+
+	/**
 	 * Return all items of this collection except the given keys.
 	 * 
 	 * @param array|static $keys / string ...$keys
