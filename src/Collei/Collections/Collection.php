@@ -663,7 +663,7 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 	}
 
 	/**
-	 * Return items without such given key-value pairs.
+	 * Return items not present among such $items.
 	 * 
 	 * @param Arrayable|iterable $items
 	 * @return static
@@ -674,7 +674,19 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 	}
 
 	/**
-	 * Return items without such given keys.
+	 * Return items not present among such $items using a $callback test.
+	 * 
+	 * @param Arrayable|iterable $items
+	 * @param Closure $callback
+	 * @return static
+	 */
+	public function diffAssocUsing(Arrayable|iterable $items, Closure $callback)
+	{
+		return new static(array_udiff_assoc($this->items, Arr::getArrayableItems($items), $callback));
+	}
+
+	/**
+	 * Return items whose keys are not present among such $keys.
 	 * 
 	 * @param Arrayable|iterable $items
 	 * @return static
@@ -682,6 +694,70 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 	public function diffKeys(Arrayable|iterable $items)
 	{
 		return new static(array_diff_key($this->items, Arr::getArrayableItems($items)));
+	}
+
+	/**
+	 * Return items whose keys are not present among such $keys using a $callback test.
+	 * 
+	 * @param Arrayable|iterable $items
+	 * @param Closure $callback
+	 * @return static
+	 */
+	public function diffKeysUsing(Arrayable|iterable $items, Closure $callback)
+	{
+		return new static(array_diff_ukey($this->items, Arr::getArrayableItems($items), $callback));
+	}
+
+	/**
+	 * Return items without such given values.
+	 * 
+	 * @param Arrayable|iterable $items
+	 * @param Closure $callback
+	 * @return static
+	 */
+	public function diffUsing(Arrayable|iterable $items, Closure $callback)
+	{
+		return new static(array_udiff($this->items, Arr::getArrayableItems($items), $callback));
+	}
+
+	/**
+	 * Return a collection of duplicate items from this collection.
+	 * 
+	 * @param string|Closure $callback = null
+	 * @param bool $strict = false
+	 * @return static
+	 */
+	public function duplicates(string|Closure $callback = null, bool $strict = false)
+	{
+		$items = $this->map($this->valueRetriever($callback));
+		$uniqueItems = $items->unique(null, $strict);
+
+		$compare = $strict
+			? (function($a, $b) { return $a === $b; })
+			: (function($a, $b) { return $a == $b; });
+
+		$duplicates = new static();
+
+		foreach ($items as $key => $item) {
+			if ($uniqueItems->isNotEmpty() && $compare($item, $uniqueItems->first())) {
+				$uniqueItems->shift();
+			} else {
+				$duplicates[$key] = $item;
+			}
+		}
+
+		return $duplicates;
+	} 
+
+	/**
+	 * Return a collection of duplicate items from this collection.
+	 * 
+	 * @param string|Closure $callback = null
+	 * @return static
+	 */
+	public function duplicatesStrict(string|Closure $callback = null)
+	{
+		return $this->duplicates($callback, true);
 	}
 
 	/**
