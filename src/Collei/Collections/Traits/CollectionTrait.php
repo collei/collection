@@ -491,7 +491,7 @@ trait CollectionTrait
 	 */
 	public function percentage(callable $callback, int $precision = 2)
 	{
-		if ($this->empty()) {
+		if ($this->isEmpty()) {
 			return null;
 		}
 
