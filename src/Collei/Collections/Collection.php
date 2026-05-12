@@ -550,12 +550,14 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 	 * Performs zip() on this collection with the given $items,
 	 * returning the resulting collection.
 	 * 
-	 * @param iterable $items
+	 * @param iterable ...$iterables
 	 * @return static
 	 */
-	public function zip(iterable $items)
+	public function zip(iterable ...$iterables)
 	{
-		return new static(array_map(null, $this->values(), array_values($items)));
+		return new static(
+			array_map(null, $this->values(), ...Arr::getArrayableItems(...$iterables))
+		);
 	}
 
 	/**
