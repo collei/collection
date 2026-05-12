@@ -424,11 +424,11 @@ interface CollectionInterface
 	/**
 	 * Retrieves an item by its key, if any.
 	 * 
-	 * @param int|string $key
+	 * @param int|string|null $key
 	 * @param mixed $default = null
 	 * @return mixed
 	 */
-	public function get(int|string $key, $default = null);
+	public function get($key, $default = null);
 
 	/**
 	 * Returns a instance of CachingIterator for this instance.
