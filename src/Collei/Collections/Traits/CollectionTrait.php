@@ -1155,7 +1155,7 @@ trait CollectionTrait
         }
 
         return function ($item, $key = null) use ($value) {
-            return is_object($item) ? $item->{$value} : $item[$value];
+            return Arr::get($item, $value);
         };
     }
 
