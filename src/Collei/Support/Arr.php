@@ -1290,16 +1290,22 @@ abstract class Arr
     }
 
     /**
-     * Retrieves an array from the argument or wrap it on array.
+     * For each argument, retrieves an array from it or wrap it on array.
      * 
-     * @param mixed $items
+     * @param mixed ...$items
      * @return array 
      */
-    public static function getArrayableItems($items)
+    public static function getArrayableItems(...$items)
     {
-        return (is_null($items) || is_scalar($items) || is_enum($items))
-            ? static::wrap($items)
-            : static::from($items);
+        $results = [];
+
+        foreach ($items as $argument) {
+            $results[] = (is_null($argument) || is_scalar($argument) || is_enum($argument))
+                ? static::wrap($argument)
+                : static::from($argument);
+        }
+
+        return (count($items) === 1) ? array_shift($results) : $results;
     }
 
     /**
