@@ -1160,6 +1160,21 @@ trait CollectionTrait
     }
 
 	/**
+	 * Returns a Closure according the passed argument.
+	 * 
+	 * @param mixed $value
+	 * @return Closure
+	 */
+    protected function valueComparator($value = null)
+    {
+        if ($this->useAsCallable($value)) {
+            return $value;
+        }
+
+        return $this->equality($value, false);
+    }
+
+	/**
 	 * Retruns a $callback that negates its result.
 	 * 
 	 * @param Closure $callback
