@@ -1359,7 +1359,7 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 	 */
 	public function skipUntil($value)
 	{
-		$callback = $this->useAsCallable($value) ? $value : $this->equality($value);
+		$callback = $this->valueComparator($value);
 
 		return $this->skipWhile($this->negate($callback));
 	}
@@ -1372,7 +1372,7 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 	 */
 	public function skipWhile($value)
 	{
-		$callback = $this->useAsCallable($value) ? $value : $this->equality($value);
+		$callback = $this->valueComparator($value);
 
 		$rest = new static();
 
@@ -1401,7 +1401,7 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 	 */
 	public function takeUntil($value)
 	{
-		$callback = $this->useAsCallable($value) ? $value : $this->equality($value);
+		$callback = $this->valueComparator($value);
 
 		$firsts = new static();
 
@@ -1424,7 +1424,7 @@ class Collection implements CollectionInterface, ArrayAccess, Countable, Iterato
 	 */
 	public function takeWhile($value)
 	{
-		$callback = $this->useAsCallable($value) ? $value : $this->equality($value);
+		$callback = $this->valueComparator($value);
 
 		return $this->takeUntil($this->negate($callback));
 	}
