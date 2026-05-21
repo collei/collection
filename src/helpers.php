@@ -51,6 +51,11 @@ function closure_count_required_args(Closure $callback)
     return $refl->getNumberOfRequiredParameters();
 }
 
+/**
+ * Retrieve how many arguments the given closure accepts.
+ * 
+ * @return int
+ */
 function closure_count_args(Closure $callback)
 {
     $refl = new ReflectionFunction($callback);
