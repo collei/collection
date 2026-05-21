@@ -31,6 +31,20 @@ class Collection implements CollectionInterface, IteratorAggregate
     }
 
     /**
+     * Returns a new filled collection indexed from $startIndex
+     * with $count elements, and using $value as item values.
+     * 
+     * @param int $startIndex
+     * @param int $count
+     * @param mixed $value = null
+     * @return static   
+     */
+    public static function fill(int $startIndex, int $count, $value = null)
+    {
+        return new static(array_fill($startIndex, $count, $value));
+    }
+
+    /**
      * Creates a new collection from integer range.
      * 
      * @param int|float|string $start
@@ -355,20 +369,6 @@ class Collection implements CollectionInterface, IteratorAggregate
     public function existsStrict($value)
     {
         return $this->exists($value, true);
-    }
-
-    /**
-     * Returns a new filled collection indexed from $startIndex
-     * with $count elements, and using $value as item values.
-     * 
-     * @param int $startIndex
-     * @param int $count
-     * @param mixed $value = null
-     * @return static   
-     */
-    public function fill(int $startIndex, int $count, $value = null)
-    {
-        return new static(array_fill($startIndex, $count, $value));
     }
 
     public function fillKeys($value = null)
