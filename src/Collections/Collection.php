@@ -230,6 +230,16 @@ class Collection implements CollectionInterface, IteratorAggregate
         );
     }
 
+    /**
+     * Computes the difference of this collection with the given
+     * array(s) or collection(s), with additional index check
+     * performed by a callback, returning the result as a new collection.
+     * 
+     * @param iterable|CollectionInterface $array
+     * @param iterable|CollectionInterface ...$arrays
+     * @param callable $callback
+     * @return static
+     */
     public function diffAssocUsing($items, ...$arguments)
     {
         return new static(
@@ -237,6 +247,15 @@ class Collection implements CollectionInterface, IteratorAggregate
         );
     }
 
+    /**
+     * Computes the difference of this collection with the given
+     * array(s) or collection(s), using keys for comparison,
+     * returning the result as a new collection.
+     * 
+     * @param iterable|CollectionInterface $array
+     * @param iterable|CollectionInterface ...$arrays
+     * @return static
+     */
     public function diffKeys($items, ...$arrays)
     {
         return new static(
@@ -244,6 +263,16 @@ class Collection implements CollectionInterface, IteratorAggregate
         );
     }
 
+    /**
+     * Computes the difference of this collection with the given
+     * array(s) or collection(s), using a callback on the keys for
+     * comparison, returning the result as a new collection.
+     * 
+     * @param iterable|CollectionInterface $array
+     * @param iterable|CollectionInterface ...$arrays
+     * @param callable $callback
+     * @return static
+     */
     public function diffKeysUsing($items, ...$arguments)
     {
         return new static(
@@ -251,6 +280,16 @@ class Collection implements CollectionInterface, IteratorAggregate
         );
     }
 
+    /**
+     * Computes the difference of this collection with the given
+     * array(s) or collection(s), using a callback on the values for
+     * comparison, returning the result as a new collection.
+     * 
+     * @param iterable|CollectionInterface $array
+     * @param iterable|CollectionInterface ...$arrays
+     * @param callable $callback
+     * @return static
+     */
     public function diffUsing($items, ...$arguments)
     {
         return new static(
@@ -258,6 +297,17 @@ class Collection implements CollectionInterface, IteratorAggregate
         );
     }
 
+    /**
+     * Computes the difference of this collection with the given
+     * array(s) or collection(s), with additional index check, by
+     * using a callback on the values for comparison, returning
+     * the result as a new collection.
+     * 
+     * @param iterable|CollectionInterface $array
+     * @param iterable|CollectionInterface ...$arrays
+     * @param callable $callback
+     * @return static
+     */
     public function diffUsingAssoc($items, ...$arguments)
     {
         return new static(
@@ -265,6 +315,18 @@ class Collection implements CollectionInterface, IteratorAggregate
         );
     }
 
+    /**
+     * Computes the difference of this collection with the given
+     * array(s) or collection(s), with additional index check, by
+     * using a callback on the values and another callback on the
+     * keys for comparison, returning the result as a new collection.
+     * 
+     * @param iterable|CollectionInterface $array
+     * @param iterable|CollectionInterface ...$arrays
+     * @param callable $valueCallback
+     * @param callable $keyCallback
+     * @return static
+     */
     public function diffUsingAssocUsing($items, ...$arguments)
     {
         return new static(
@@ -272,16 +334,38 @@ class Collection implements CollectionInterface, IteratorAggregate
         );
     }
 
+    /**
+     * Checks if a value exists in this collection.
+     * 
+     * @param mixed $value
+     * @param bool $strict = false
+     * @return bool
+     */
     public function exists($value, bool $strict = false)
     {
         return in_array($value, $this->items, $strict);
     }
 
+    /**
+     * Checks strictly if a value exists in this collection.
+     * 
+     * @param mixed $value
+     * @return bool
+     */
     public function existsStrict($value)
     {
         return $this->exists($value, true);
     }
 
+    /**
+     * Returns a new filled collection indexed from $startIndex
+     * with $count elements, and using $value as item values.
+     * 
+     * @param int $startIndex
+     * @param int $count
+     * @param mixed $value = null
+     * @return static   
+     */
     public function fill(int $startIndex, int $count, $value = null)
     {
         return new static(array_fill($startIndex, $count, $value));
@@ -383,31 +467,65 @@ class Collection implements CollectionInterface, IteratorAggregate
         );
     }
 
+    /**
+     * Tells whether the collection has sequential keys from zero
+     * (a normal array).
+     * 
+     * @return bool
+     */
     public function isList()
     {
         return array_is_list($this->items);
     }
 
+    /**
+     * Tells whether the given key exists in this collection.
+     * 
+     * @param int|string $key
+     * @return bool
+     */
     public function hasKey($key)
     {
         return array_key_exists($key, $this->items);
     }
 
+    /**
+     * Return the last item of collection.
+     * 
+     * @return mixed
+     */
     public function last()
     {
         return array_last($this->items);
     }
 
+    /**
+     * Return the key of the last item of collection.
+     * 
+     * @return int|string|null
+     */
     public function lastKey()
     {
         return array_key_last($this->items);
     }
 
+    /**
+     * Return a copy of this collection, but keyed by the
+     * value specified by $field.
+     * 
+     * @param int|string|callable $field
+     * @return static
+     */
     public function keyBy($field)
     {
         return $this->values($field)->combine($this);
     }
 
+    /**
+     * Return a collection with all keys of this collection.
+     * 
+     * @return static
+     */
     public function keys()
     {
         return new static(array_keys($this->items));
