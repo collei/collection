@@ -166,7 +166,7 @@ class Collection implements CollectionInterface, IteratorAggregate
     {
         list($values, $counts) = array([], []);
 
-        foreach ($this->items as $item) {
+        foreach ($this as $item) {
             $key = array_search($item, $values, $strict);
 
             if ($key === false) {
@@ -429,7 +429,7 @@ class Collection implements CollectionInterface, IteratorAggregate
 
         $max = -PHP_FLOAT_MAX;
 
-        foreach ($this->items as $key => $item) {
+        foreach ($this as $key => $item) {
             $value = $callback($item, $key);
 
             $compare = $value <=> $max;
@@ -474,7 +474,7 @@ class Collection implements CollectionInterface, IteratorAggregate
 
         $min = PHP_FLOAT_MAX;
 
-        foreach ($this->items as $key => $item) {
+        foreach ($this as $key => $item) {
             $value = $callback($item, $key);
 
             $compare = $value <=> $min;
@@ -539,7 +539,7 @@ class Collection implements CollectionInterface, IteratorAggregate
 
         $product = 1;
 
-        foreach ($this->items as $key => $item) {
+        foreach ($this as $key => $item) {
             $value = $callback($item, $key);
 
             if (is_int($value) || is_float($value) || is_numeric($value)) {
@@ -586,7 +586,7 @@ class Collection implements CollectionInterface, IteratorAggregate
 
             $position = -1;
 
-            foreach ($this->items as $key => $item) {
+            foreach ($this as $key => $item) {
                 ++$position;
 
                 if ($position < $random) {
@@ -723,7 +723,7 @@ class Collection implements CollectionInterface, IteratorAggregate
 		$callback = $this->valueRetriever($field);
 
         // Builds a keyed comparator (using the callback) for the due sorting.
-		foreach ($this->items as $key => $value) {
+		foreach ($this as $key => $value) {
 			$results[$key] = $callback($value, $key);
 		}
 
@@ -840,7 +840,7 @@ class Collection implements CollectionInterface, IteratorAggregate
 
         $sum = 1;
 
-        foreach ($this->items as $key => $item) {
+        foreach ($this as $key => $item) {
             $value = $callback($item, $key);
 
             if (is_int($value) || is_float($value) || is_numeric($value)) {
@@ -887,7 +887,7 @@ class Collection implements CollectionInterface, IteratorAggregate
 
         $values = [];
 
-        foreach ($this->items as $key => $item) {
+        foreach ($this as $key => $item) {
             $values[] = $callback($item, $key);
         }
 
