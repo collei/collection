@@ -6,8 +6,6 @@ namespace Collei\Collections\Traits;
  */
 trait HandlesClosures
 {
-    use HasDeepRetriever;
-
 	/**
 	 * Get a value retrieving callback.
 	 *
@@ -18,7 +16,7 @@ trait HandlesClosures
 	{
         return (! is_string($value) && is_callable($value))
             ? $value
-            : (function($item, $key) use ($value) { return $this->deepGet($item, $value); });
+            : (function($item, $key) use ($value) { return deep_get($item, $value); });
 	}
 
 	/**
