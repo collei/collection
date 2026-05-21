@@ -776,8 +776,8 @@ class Collection implements CollectionInterface, IteratorAggregate
 					$result = $prop($a, $b);
 				} else {
 					$values = $ascending
-                        ? [$this->deepGet($a, $prop), $this->deepGet($b, $prop)]
-                        : [$this->deepGet($b, $prop), $this->deepGet($a, $prop)];
+                        ? [deep_get($a, $prop), deep_get($b, $prop)]
+                        : [deep_get($b, $prop), deep_get($a, $prop)];
 
 					$result = $values[0] <=> $values[1];
 				}
