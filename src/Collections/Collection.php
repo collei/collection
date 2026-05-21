@@ -710,7 +710,7 @@ class Collection implements CollectionInterface, IteratorAggregate
 
     public function sort($callback = null)
     {
-        $ordered = $this->items;
+        $ordered = $this->toArray();
 
         ($callback && is_callable($callback))
             ? uasort($ordered, $callback)
@@ -760,7 +760,7 @@ class Collection implements CollectionInterface, IteratorAggregate
 	 */
 	protected function sortByFields(array $comparisons = [])
 	{
-		$items = $this->items;
+		$items = $this->toArray();
 
 		usort($items, function ($a, $b) use ($comparisons) {
 			foreach ($comparisons as $comparison) {
@@ -795,7 +795,7 @@ class Collection implements CollectionInterface, IteratorAggregate
 
     public function sortByKey($callback = null)
     {
-        $ordered = $this->items;
+        $ordered = $this->toArray();
 
         ($callback && is_callable($callback))
             ? uksort($ordered, $callback)
@@ -806,7 +806,7 @@ class Collection implements CollectionInterface, IteratorAggregate
 
     public function sortByKeyDesc($options = SORT_REGULAR)
     {
-        $ordered = $this->items;
+        $ordered = $this->toArray();
 
         krsort($ordered, $options);
 
