@@ -371,9 +371,9 @@ class Collection implements CollectionInterface, IteratorAggregate
         return new static(array_fill($startIndex, $count, $value));
     }
 
-    public function fillKeys($keys, $value = null)
+    public function fillKeys($value = null)
     {
-        return new static(array_fill_keys($this->arrayFrom($keys, true), $value));
+        return new static(array_fill_keys($this->toArray(), $value));
     }
 
     public function filter(Closure $callback)
