@@ -1,0 +1,27 @@
+{
+    "name": "collei/collection",
+    "description": "a Laravel-inspired Collection class, based upon internal PHP functions and itselves.",
+    "license": "MIT",
+    "keywords": [
+        "collection"
+    ],
+    "authors": [
+        {
+            "name": "Al Ju",
+            "email": "alarido.su@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^7.0 || ^8.0",
+        "ext-mbstring": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Collei\\": "src"
+        },
+        "files": [
+            "src/helpers.php",
+            "src/polyfills.php"
+        ]
+    }
+}
