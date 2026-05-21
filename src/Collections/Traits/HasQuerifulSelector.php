@@ -6,8 +6,6 @@ namespace Collei\Collections\Traits;
  */
 trait HasQuerifulSelector
 {
-    use HasDeepRetriever;
-
 	/**
 	 * Get an operator checker callback.
 	 *
@@ -23,7 +21,7 @@ trait HasQuerifulSelector
             : ((func_num_args() === 2) ? array($operator, '=') : array($value, $operator));
 
 		return function ($item) use ($key, $operator, $value) {
-			$retrieved = $this->deepGet($item, $key);
+			$retrieved = deep_get($item, $key);
 
 			$strings = array_filter([$retrieved, $value], function ($value) {
 				return is_string($value) || (is_object($value) && method_exists($value, '__toString'));
