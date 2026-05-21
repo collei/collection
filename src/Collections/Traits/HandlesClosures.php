@@ -16,7 +16,7 @@ trait HandlesClosures
 	{
         return (! is_string($value) && is_callable($value))
             ? $value
-            : (function($item, $key) use ($value) { return deep_get($item, $value); });
+            : (function($item, $key = null) use ($value) { return deep_get($item, $value); });
 	}
 
 	/**
@@ -38,7 +38,7 @@ trait HandlesClosures
 	 */
 	protected function equality($value)
 	{
-		return (function ($item) use ($value) { return $item === $value; });
+		return (function ($item, $key = null) use ($value) { return $item === $value; });
 	}
 
 	/**
@@ -48,6 +48,6 @@ trait HandlesClosures
 	 */
 	protected function identity()
 	{
-		return (function ($value) { return $value; });
+		return (function ($value, $key = null) { return $value; });
 	}
 }
