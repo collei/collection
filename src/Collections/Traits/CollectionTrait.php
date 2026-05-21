@@ -32,6 +32,47 @@ trait CollectionTrait
     }
 
     /**
+     * Retrieves the average value of the collection.
+     * If the field argument is given, retrieves the average value from
+     * the given subkey (e.g., database results).
+     * 
+     * @param int|string|callable $field = null
+     * @return int|float
+     */
+    public function average($field = null)
+    {
+        return $this->avg($field);
+    }
+
+    /**
+     * Retrieves the average value of the collection.
+     * If the field argument is given, retrieves the average value from
+     * the given subkey (e.g., database results).
+     * 
+     * @param int|string|callable $field = null
+     * @return int|float
+     */
+    public function avg($field = null)
+    {
+        $callback = is_null($field)
+            ? $this->identity()
+            : $this->valueRetriever($field);
+
+        $sum = $count = 0;
+
+        foreach ($this as $key => $item) {
+            $value = $callback($item, $key);
+
+            if (is_int($value) || is_float($value) || is_numeric($value)) {
+                $sum += $value;
+                $count++;
+            }
+        }
+
+        return $sum / $count;
+    }
+
+    /**
      * Produces a copy of this collection, split into chunks,
      * and returns a collection of these chunks.
      * 

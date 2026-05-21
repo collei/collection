@@ -22,6 +22,26 @@ interface CollectionInterface
      */
     public function any(callable $callback);
 
+        /**
+     * Retrieves the average value of the collection.
+     * If the field argument is given, retrieves the average value from
+     * the given subkey (e.g., database results).
+     * 
+     * @param int|string|callable $field = null
+     * @return int|float
+     */
+    public function average($field = null);
+
+    /**
+     * Retrieves the average value of the collection.
+     * If the field argument is given, retrieves the average value from
+     * the given subkey (e.g., database results).
+     * 
+     * @param int|string|callable $field = null
+     * @return int|float
+     */
+    public function avg($field = null);
+
     /**
      * Produces a copy of this collection, split into chunks,
      * and returns a collection of these chunks.
