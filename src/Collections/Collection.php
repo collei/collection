@@ -12,42 +12,87 @@ use Exceptions\CollectionException;
 
 class Collection implements CollectionInterface, IteratorAggregate
 {
-    use HasDeepRetriever;
     use HasQuerifulSelector;
     use HandlesClosures;
 
+    /**
+     * @var array
+     */
     private $items = [];
 
+    /**
+     * Creates a new collection with the given items.
+     * 
+     * @param array|Traversable|CollectionInterface $items = []
+     */
     public function __construct($items = [])
     {
-        $this->items = $items;
+        $this->items = $this->arrayFrom($items);
     }
 
+    /**
+     * Creates a new collection from integer range.
+     * 
+     * @param int|float|string $start
+     * @param int|float|string $end
+     * @param int|float $step = 1
+     * @return static
+     */
     public static function range($start, $end, $step = 1)
     {
         return new static(range($start, $end, $step));
     }
 
+    /**
+     * Converts the collection to array.
+     * 
+     * @return array
+     */
     public function toArray()
     {
         return $this->items;
     }
 
+    /**
+     * Retrieve an external iterator or traversable.
+     * 
+     * @return ArrayIterator
+     */
     public function getIterator(): Traversable
     {
         return new ArrayIterator($this->items);
     }
 
+    /**
+     * Checks if all array elements satisfy a callback function.
+     * 
+     * @param callable $callback
+     * @return bool
+     */
     public function all(callable $callback)
     {
         return array_all($this->items, $callback);
     }
 
+    /**
+     * Checks if any array element satisfy a callback function.
+     * 
+     * @param callable $callback
+     * @return bool
+     */
     public function any(callable $callback)
     {
         return array_any($this->items, $callback);
     }
 
+    /**
+     * Produces a copy of this collection, split into chunks,
+     * and returns a collection of these chunks.
+     * 
+     * @param int $length
+     * @param bool $preserveKeys = false
+     * @return static
+     */
     public function chunk(int $length, bool $preserveKeys = false)
     {
         $chunks = array_chunk($this->items, $length, $preserveKeys);
@@ -59,16 +104,38 @@ class Collection implements CollectionInterface, IteratorAggregate
         return new static(array_map($callback, $chunks));
     }
 
+    /**
+     * Return a new collection with values from a single column
+     * in the collection.
+     * 
+     * @param int|string|callable $columnKey
+     * @param int|string|callable $indexKey = null
+     * @return static
+     */
     public function column($columnKey, $indexKey = null)
     {
         return new static(array_column_callback($this->items, ...func_get_args()));
     }
 
+    /**
+     * Return a new collection with the given array keyed by the
+     * values of this colelction.
+     * 
+     * @param iterable|CollectionInterface $items = []
+     * @return static
+     */
     public function combine($items = [])
     {
         return new static(array_combine($this->items, $this->arrayFrom($items, true)));
     }
 
+    /**
+     * Return a new collection with the current collection items
+     * and keyed by the given array values.
+     * 
+     * @param iterable|CollectionInterface $items = []
+     * @return static
+     */
     public function combineTo($items = [])
     {
         if ($items instanceof CollectionInterface) {
@@ -78,11 +145,23 @@ class Collection implements CollectionInterface, IteratorAggregate
         return new static(array_combine($items, $this->items));
     }
 
+    /**
+     * Retrieve the items count.
+     * 
+     * @return int
+     */
     public function count()
     {
         return count($this->items);
     }
 
+    /**
+     * Retrieves a new collection with the Counts of each
+     * distinct value in this collection.
+     * 
+     * @param bool $strict = false
+     * @return static
+     */
     public function countValues(bool $strict = false)
     {
         list($values, $counts) = array([], []);
@@ -109,6 +188,12 @@ class Collection implements CollectionInterface, IteratorAggregate
         return new static($result);
     }
 
+    /**
+     * Retrieves a new collection with the Counts of each strictly
+     * distinct value in this collection.
+     * 
+     * @return static
+     */
     public function countValuesStrict()
     {
         return $this->countValues(true);
@@ -326,6 +411,14 @@ class Collection implements CollectionInterface, IteratorAggregate
         return new static(array_map($callback, $this->items));
     }
 
+    /**
+     * Retrieves the maximum value of the collection.
+     * If the field argument is given, retrieves the maximum value from
+     * the given subkey (e.g., database results).
+     * 
+     * @param int|string|callable $field = null
+     * @return int|float
+     */
     public function max($field = null)
     {
         if (is_null($field)) {
@@ -363,6 +456,14 @@ class Collection implements CollectionInterface, IteratorAggregate
         );
     }
 
+    /**
+     * Retrieves the minimum value of the collection.
+     * If the field argument is given, retrieves the minimum value from
+     * the given subkey (e.g., database results).
+     * 
+     * @param int|string|callable $field = null
+     * @return int|float
+     */
     public function min($field = null)
     {
         if (is_null($field)) {
@@ -386,11 +487,26 @@ class Collection implements CollectionInterface, IteratorAggregate
         return $min;
     }
 
+    /**
+     * Returns a copy of the collection, but padded to $length with
+     * nulls or the given $value if provided.
+     * 
+     * @param int $length
+     * @param mixed $value = null
+     * @return static  
+     */
     public function pad(int $length, $value = null)
     {
         return new static(array_pad($this->items, $length, $value));
     }
 
+    /**
+     * Pops the last element off of the collection and retrieves it.
+     * 
+     * @param bool $throwException = false
+     * @return mixed
+     * @throws CollectionException if $throwException is set to true and the collection is empty.
+     */
     public function pop(bool $throwException = false)
     {
         if (empty($this->items) && $throwException) {
@@ -405,6 +521,14 @@ class Collection implements CollectionInterface, IteratorAggregate
         return $this->unshift(...$values);
     }
 
+    /**
+     * Retrieves the aritmetic product of all numeric values.
+     * If the field argument is given, retrieves values from a specific subkey
+     * in each item (e.g., database results).
+     * 
+     * @param int|string|callable $field = null
+     * @return int|float
+     */
     public function product($field = null)
     {
         if (is_null($field)) {
@@ -514,6 +638,13 @@ class Collection implements CollectionInterface, IteratorAggregate
         return array_search($needle, $this->items, true);
     }
 
+    /**
+     * Shifts the first element of the collection and retrieves it.
+     * 
+     * @param bool $throwException = false
+     * @return mixed
+     * @throws CollectionException if $throwException is set to true and the collection is empty.
+     */
     public function shift(bool $throwException = false)
     {
         if (empty($this->items) && $throwException) {
@@ -523,6 +654,12 @@ class Collection implements CollectionInterface, IteratorAggregate
         return array_shift($this->array);
     }
 
+    /**
+     * Returns a copy of this collection with all items shuffled.
+     * It uses random_int() function as its source of randomness.
+     * 
+     * @return static
+     */
     public function shuffle()
     {
         list($items, $length, $picked) = array($this->items, $this->count(), []);
@@ -663,20 +800,36 @@ class Collection implements CollectionInterface, IteratorAggregate
 
     public function sortDesc($options = SORT_REGULAR)
     {
-        $ordered = $this->items;
+        $ordered = $this->toArray();
 
         arsort($ordered, $options);
 
         return new static($ordered);
     }
 
+    /**
+     * Remove a portion of the collection and replace it with $replacement.
+     * 
+     * @param int $offset
+     * @param ?int $length = null
+     * @param iterable|CollectionInterface $replacement = []
+     * @return static
+     */
     public function splice(int $offset, ?int $length = null, $replacement = [])
     {
         return new static(
-            array_splice($this->items, $offset, $length, $this->arrayFrom($replacement))
+            array_splice($this->items, $offset, $length, $this->arrayFrom($replacement, true))
         );
     }
 
+    /**
+     * Retrieves the aritmetic sum of all numeric items.
+     * If the field argument is given, retrieves values from a specific subkey
+     * in each item (e.g., database results).
+     * 
+     * @param int|string|callable $field = null
+     * @return int|float
+     */
     public function sum($field = null)
     {
         if (is_null($field)) {
@@ -703,6 +856,12 @@ class Collection implements CollectionInterface, IteratorAggregate
         return new static(array_unique($this->items, $flags));
     }
 
+    /**
+     * Appends values to the start of this collection.
+     * 
+     * @param mixed ...$values
+     * @return $this
+     */
     public function unshift(...$values)
     {
         array_unshift($this->items, ...$values);
@@ -710,6 +869,14 @@ class Collection implements CollectionInterface, IteratorAggregate
         return $this;
     }
 
+    /**
+     * Retrieves a copy of the collection with all keys reset to sequential.
+     * If the field argument is given, retrieves values from a specific subkey
+     * in each item (e.g., database results).
+     * 
+     * @param int|string|callable $field = null
+     * @return static 
+     */
     public function values($field = null)
     {
         if (is_null($field)) {
@@ -727,21 +894,41 @@ class Collection implements CollectionInterface, IteratorAggregate
         return new static($values);
     }
 
+    /**
+     * Retrieves a copy of the collection with all keys in lowercase.
+     * 
+     * @return static 
+     */
     public function withLowerKeys()
     {
         return new static(mb_array_change_key_case($this->items, CASE_LOWER));
     }
 
+    /**
+     * Retrieves a copy of the collection with all keys in all levels in lowercase.
+     * 
+     * @return static 
+     */
     public function withLowerKeysRecursive()
     {
         return new static(mb_array_change_key_case_recursive($this->items, CASE_LOWER));
     }
 
+    /**
+     * Retrieves a copy of the collection with all keys in uppercase.
+     * 
+     * @return static 
+     */
     public function withUpperKeys()
     {
         return new static(mb_array_change_key_case($this->items, CASE_UPPER));
     }
 
+    /**
+     * Retrieves a copy of the collection with all keys in all levels in uppercase.
+     * 
+     * @return static 
+     */
     public function withUpperKeysRecursive()
     {
         return new static(mb_array_change_key_case_recursive($this->items, CASE_UPPER));
