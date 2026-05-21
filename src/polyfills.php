@@ -77,6 +77,12 @@ if (! function_exists('array_find_key')) {
 }
 
 if (! function_exists('array_key_first')) {
+    /**
+     * Gets the first key of an array.
+     * 
+     * @param array $array
+     * @return int|string|null
+     */
     function array_key_first(array $array)
     {
         foreach ($array as $key => $unused) {
@@ -88,6 +94,12 @@ if (! function_exists('array_key_first')) {
 }
 
 if (! function_exists("array_first")) {
+    /**
+     * Gets the first value of an array.
+     * 
+     * @param array $array
+     * @return mixed
+     */
     function array_first(array $array)
     {
         return $array ? $array[array_key_first($array)] : null;
@@ -95,6 +107,12 @@ if (! function_exists("array_first")) {
 }
 
 if (! function_exists("array_key_last")) {
+    /**
+     * Gets the last key of an array.
+     * 
+     * @param array $array
+     * @return int|string|null
+     */
     function array_key_last($array)
     {
         if (! is_array($array) || empty($array)) {
@@ -106,6 +124,12 @@ if (! function_exists("array_key_last")) {
 }
 
 if (! function_exists("array_last")) {
+    /**
+     * Gets the last value of an array.
+     * 
+     * @param array $array
+     * @return mixed
+     */
     function array_last(array $array)
     {
         return $array ? $array[array_key_last($array)] : null;
@@ -113,6 +137,12 @@ if (! function_exists("array_last")) {
 }
 
 if (! function_exists('array_is_list')) {
+    /**
+     * Checks whether the given array is a list.
+     * 
+     * @param array $array
+     * @return bool
+     */
     function array_is_list(array $array)
     {
         return $array === [] || (array_keys($array) === range(0, count($array) - 1));
@@ -120,6 +150,13 @@ if (! function_exists('array_is_list')) {
 }
 
 if (! function_exists('mb_array_change_key_case')) {
+    /**
+     * Changes the case of all keys in an array.
+     * 
+     * @param array $array
+     * @param int $case = CASE_LOWER
+     * @return array
+     */
     function mb_array_change_key_case(array $array, int $case = CASE_LOWER)
     {
         $case = ($case == CASE_LOWER) ? MB_CASE_LOWER : MB_CASE_UPPER;
@@ -133,6 +170,13 @@ if (! function_exists('mb_array_change_key_case')) {
 }
 
 if (! function_exists('mb_array_change_key_case_recursive')) {
+    /**
+     * Changes the case of all keys in an array, recursively.
+     * 
+     * @param array $array
+     * @param int $case = CASE_LOWER
+     * @return array
+     */
     function mb_array_change_key_case_recursive(array $array, int $case = CASE_LOWER)
     {
         foreach ($array as $k => $val) {
@@ -150,6 +194,14 @@ if (! function_exists('mb_array_change_key_case_recursive')) {
 }
 
 if (! function_exists('array_column_callback')) {
+    /**
+     * Return the values from a single column in the input array.
+     * 
+     * @param array $array
+     * @param int|string|callable $column_key
+     * @param int|string|callable $index_key = null
+     * @return array
+     */
     function array_column_callback(array $array, $column_key, $index_key = null)
     {
         if (is_null($column_key) && is_null($index_key)) {
@@ -180,4 +232,3 @@ if (! function_exists('array_column_callback')) {
         return $result;
     }
 }
-
