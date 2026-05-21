@@ -688,6 +688,21 @@ class Collection implements CollectionInterface, IteratorAggregate
         return new static($picked);
     }
 
+    /**
+     * Retrieves a collection without the first $count items.
+     * 
+     * @param int $count
+     * @return static
+     */
+    public function skip(int $count)
+    {
+        if ($count < 1) {
+            throw new InvalidArgumentException('$count must be a nonzero positive integer');
+        }
+
+        return $this->slice($count);
+    }
+
     public function slice(int $offset, ?int $length = null)
     {
         return new static(array_slice($this->items, $offset, $length, true));
@@ -851,6 +866,27 @@ class Collection implements CollectionInterface, IteratorAggregate
         return $sum;
     }
 
+    /**
+     * Retrieves a collection with the first $length items.
+     * 
+     * @param int $length
+     * @return static
+     */
+    public function take(int $length)
+    {
+        if ($length < 1) {
+            throw new InvalidArgumentException('$length must be a nonzero positive integer');
+        }
+
+        return $this->slice(0, $length);
+    }
+
+    /**
+     * Retrieves a copy of this collection without any duplicate values.
+     * 
+     * @param int $flags = SORT_STRING
+     * @return static
+     */
     public function unique(int $flags = SORT_STRING)
     {
         return new static(array_unique($this->items, $flags));
