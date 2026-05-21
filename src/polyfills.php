@@ -1,13 +1,38 @@
 <?php
 
 if (! function_exists('array_all')) {
+    /**
+     * Returns true if ALL array values conforms to the callback condition.
+     * 
+     * @param array $array
+     * @param callable $callable
+     * @return bool
+     */
     function array_all(array $array, callable $callable)
     {
-        foreach ($array as $key => $value) {
-            if (! $callable($value, $key))
-                return false;
+        foreach ($array as $key => $value) if (! $callable($value, $key)) {
+            return false;
         }
+
         return true;
+    }
+}
+
+if (! function_exists('array_any')) {
+    /**
+     * Returns true if ANY value of array conforms to the callback condition.
+     * 
+     * @param array $array
+     * @param callable $callable
+     * @return bool
+     */
+    function array_any(array $array, callable $callable)
+    {
+        foreach ($array as $key => $value) if ($callable($value, $key)) {
+            return true;
+        }
+
+        return false;
     }
 }
 
