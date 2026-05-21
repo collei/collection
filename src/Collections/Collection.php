@@ -199,6 +199,14 @@ class Collection implements CollectionInterface, IteratorAggregate
         return $this->countValues(true);
     }
 
+    /**
+     * Computes the difference of this collection with the given
+     * array(s) or collection(s), returning it as a new collection.
+     * 
+     * @param iterable|CollectionInterface $array
+     * @param iterable|CollectionInterface ...$arrays
+     * @return static
+     */
     public function diff($array, ...$arrays)
     {
         return new static(
@@ -206,6 +214,15 @@ class Collection implements CollectionInterface, IteratorAggregate
         );
     }
 
+    /**
+     * Computes the difference of this collection with the given
+     * array(s) or collection(s), with additional index check, and
+     * returning the result as a new collection.
+     * 
+     * @param iterable|CollectionInterface $array
+     * @param iterable|CollectionInterface ...$arrays
+     * @return static
+     */
     public function diffAssoc($array, ...$arrays)
     {
         return new static(
@@ -396,6 +413,15 @@ class Collection implements CollectionInterface, IteratorAggregate
         return new static(array_keys($this->items));
     }
 
+    /**
+     * Applies the callback to the elements of this collection,
+     * returning the result as a new collection.
+     * If the callback accepts two arguments, the item Key will
+     * be available as the second argument.
+     * 
+     * @param Closure $callback
+     * @return static
+     */
     public function map(Closure $callback)
     {
         $count = closure_count_args($callback);
@@ -442,6 +468,14 @@ class Collection implements CollectionInterface, IteratorAggregate
         return $max;
     }
 
+    /**
+     * Merges this collection with the given array(s) or collection(s),
+     * returning the result as a new collection.
+     * 
+     * @param iterable|CollectionInterface $array
+     * @param iterable|CollectionInterface ...$arrays
+     * @return static
+     */
     public function merge($array, ...$arrays)
     {
         return new static(
@@ -449,6 +483,14 @@ class Collection implements CollectionInterface, IteratorAggregate
         );
     }
 
+    /**
+     * Recursively merges this collection with the given array(s)
+     * or collection(s), returning the result as a new collection.
+     * 
+     * @param iterable|CollectionInterface $array
+     * @param iterable|CollectionInterface ...$arrays
+     * @return static
+     */
     public function mergeRecursive($array, ...$arrays)
     {
         return new static(
@@ -550,6 +592,14 @@ class Collection implements CollectionInterface, IteratorAggregate
         return $product;
     }
 
+    /**
+     * Push one or more elements onto the end of this collection.
+     * Returns this collection.
+     * 
+     * @param mixed $value
+     * @param mixed ...$values
+     * @return $this
+     */
     public function push($value, ...$values)
     {
         array_push($this->items, $value, ...$values);
@@ -557,6 +607,12 @@ class Collection implements CollectionInterface, IteratorAggregate
         return $this;
     }
 
+    /**
+     * Returns one or more random items from the collection.
+     *
+     * @param int $count = 1
+     * @return mixed
+     */
     public function random(int $count = 1)
     {
         if ($count < 1) {
@@ -604,11 +660,27 @@ class Collection implements CollectionInterface, IteratorAggregate
         return (count($picked) > 1) ? $picked : array_first($picked);
     }
 
+    /**
+     * Iteratively reduce the collection to a single value using
+     * a callback function.
+     * 
+     * @param Closure $callback
+     * @param mixed $initial
+     * @return mixed
+     */
     public function reduce(Closure $callback, $initial = null)
     {
         return array_reduce($this->items, $callback, $initial);
     }
 
+    /**
+     * Replaces elements from passed arrays or collections into
+     * a copy of this collection and returns the resulting collection.
+     * 
+     * @param iterable|CollectionInterface $array
+     * @param iterable|CollectionInterface ...$arrays
+     * @return static
+     */
     public function replace($array, ...$arrays)
     {
         return new static(
@@ -616,6 +688,15 @@ class Collection implements CollectionInterface, IteratorAggregate
         );
     }
 
+    /**
+     * Recursively replaces elements from passed arrays or
+     * collections into a copy of this collection and returns
+     * the resulting collection.
+     * 
+     * @param iterable|CollectionInterface $array
+     * @param iterable|CollectionInterface ...$arrays
+     * @return static
+     */
     public function replaceRecursive($array, ...$arrays)
     {
         return new static(
@@ -623,16 +704,37 @@ class Collection implements CollectionInterface, IteratorAggregate
         );
     }
 
+	/**
+	 * Return a copy of this collection with elements in
+     * reverse order.
+	 *
+	 * @return static
+	 */
     public function reverse()
     {
         return new static(array_reverse($this->items, true));
     }
 
+	/**
+	 * Searches the collection for a given value and returns
+     * the first corresponding key if successful.
+	 *
+	 * @param mixed $needle
+     * @param bool $strict = false
+	 * @return int|string|false
+	 */
     public function search($needle, bool $strict = false)
     {
         return array_search($needle, $this->items, $strict);
     }
 
+	/**
+	 * Searches strictly the collection for a given value and
+     * returns the first corresponding key if successful.
+	 *
+	 * @param mixed $needle
+	 * @return int|string|false
+	 */
     public function searchStrict($needle)
     {
         return array_search($needle, $this->items, true);
@@ -703,11 +805,24 @@ class Collection implements CollectionInterface, IteratorAggregate
         return $this->slice($count);
     }
 
+    /**
+     * Returns a collection from a slice of this collection.
+     * 
+     * @param int $offset
+     * @param ?int $length = null
+     * @return static
+     */
     public function slice(int $offset, ?int $length = null)
     {
         return new static(array_slice($this->items, $offset, $length, true));
     }
 
+	/**
+	 * Sort-asc the collection, optionally using a callback.
+	 *
+	 * @param int|callable $callback = null
+	 * @return static
+	 */
     public function sort($callback = null)
     {
         $ordered = $this->toArray();
@@ -722,9 +837,9 @@ class Collection implements CollectionInterface, IteratorAggregate
 	/**
 	 * Sort the collection by one or more fields or a callback.
 	 *
-	 * @param  string|array|callable  $field
-	 * @param  int  $options
-	 * @param  bool  $descending
+	 * @param string|array|callable $field
+	 * @param int $options
+	 * @param bool $descending
 	 * @return static
 	 */
 	public function sortBy($field, $options = SORT_REGULAR, $descending = false)
@@ -755,7 +870,7 @@ class Collection implements CollectionInterface, IteratorAggregate
 	/**
 	 * Sort the collection through several fields.
 	 *
-	 * @param  array  $comparisons
+	 * @param array $comparisons
 	 * @return static
 	 */
 	protected function sortByFields(array $comparisons = [])
@@ -793,6 +908,12 @@ class Collection implements CollectionInterface, IteratorAggregate
 		return new static($items);
 	}
 
+	/**
+	 * Sort-asc the collection by key, optionally using a callback.
+	 *
+	 * @param int|callable $callback = null
+	 * @return static
+	 */
     public function sortByKey($callback = null)
     {
         $ordered = $this->toArray();
@@ -804,6 +925,12 @@ class Collection implements CollectionInterface, IteratorAggregate
         return new static($ordered);
     }
 
+	/**
+	 * Sort-desc the collection by key, optionally using a callback.
+	 *
+	 * @param int|callable $callback = null
+	 * @return static
+	 */
     public function sortByKeyDesc($options = SORT_REGULAR)
     {
         $ordered = $this->toArray();
@@ -813,6 +940,12 @@ class Collection implements CollectionInterface, IteratorAggregate
         return new static($ordered);
     }
 
+	/**
+	 * Sort-desc the collection.
+	 *
+	 * @param int $options = null
+	 * @return static
+	 */
     public function sortDesc($options = SORT_REGULAR)
     {
         $ordered = $this->toArray();
