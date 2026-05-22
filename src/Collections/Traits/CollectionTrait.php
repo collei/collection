@@ -801,7 +801,10 @@ trait CollectionTrait
 
         if ($throwException) {
             throw new InvalidArgumentException(
-                'argument must be either an array, an instanceof CollectionInterface or an instanceof Traversable'
+                'argument must be either an array, ' .
+                'an instanceof CollectionInterface, ' .
+                'an instanceof Traversable or ' .
+                'an instance of any class implementing a toArray() method with zero required arguments'
             );
         }
 
