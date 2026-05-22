@@ -3,6 +3,7 @@ namespace Collei\Collections\Exceptions;
 
 use RuntimeException;
 use Throwable;
+use Collei\Collections\CollectionInterface;
 
 /**
  * Collection exceptions.
