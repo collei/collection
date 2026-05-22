@@ -695,7 +695,7 @@ trait CollectionTrait
         $values = [];
 
         foreach ($this as $key => $item) {
-            $values[] = $callback($item, $key);
+            $values[$key] = $callback($item, $key);
         }
 
         return new static($values);
