@@ -12,6 +12,36 @@ trait CollectionTrait
     use HasQuerifulSelector;
     use HandlesClosures;
 
+    protected $proxable = [
+        'average' => 'avg',
+        'avg' => 'avg',
+        'max' => 'max',
+        'min' => 'min',
+        'product' => 'product',
+        'sum' => 'sum',
+        'keyBy' => 'keyBy',
+        'sort' => 'sortBy',
+        'sortDesc' => 'sortByDesc',
+        'values' => 'values',
+    ];
+
+    /**
+     * Proxies calls onto the collection.
+     * 
+     * @param string property
+     * @return HigherOrderProxy
+     */
+    public function __get($property)
+    {
+        if (array_key_exists($property, $this->proxable)) {
+            return new HigherOrderProxy($this, $this->proxable[$property]);
+        }
+
+        throw new CollectionException(
+            $this, sprintf('There is no such method in the collection: \'%s\'', $property)
+        );
+    }
+
     /**
      * Checks if all array elements satisfy a callback function.
      * 
