@@ -569,9 +569,11 @@ trait CollectionTrait
      */
     public function splice(int $offset, ?int $length = null, $replacement = [])
     {
-        return new static(
-            array_splice($this->items, $offset, $length, $this->arrayFrom($replacement, true))
-        );
+        $result = $this->toArray();
+
+        array_splice($result, $offset, $length, $this->arrayFrom($replacement, true));
+        
+        return new static($result);
     }
 
     /**
