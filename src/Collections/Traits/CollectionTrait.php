@@ -795,6 +795,10 @@ trait CollectionTrait
             return iterator_to_array($items, true);
         }
 
+        if (is_object($items) && (method_count_required_args($items, 'toArray') === 0)) {
+            return $items->toArray();
+        }
+
         if ($throwException) {
             throw new InvalidArgumentException(
                 'argument must be either an array, an instanceof CollectionInterface or an instanceof Traversable'
