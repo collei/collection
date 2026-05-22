@@ -1,6 +1,9 @@
 <?php
 namespace Collei\Collections\Traits;
 
+use Closure;
+use Collei\Collections\CollectionInterface;
+
 /**
  * Common methods for collections.
  */

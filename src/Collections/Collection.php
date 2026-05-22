@@ -2,13 +2,12 @@
 namespace Collei\Collections;
 
 use ArrayIterator;
+use Closure;
 use InvalidArgumentException;
 use IteratorAggregate;
 use Traversable;
-use Traits\CollectionTrait;
-use Traits\HasQuerifulSelector;
-use Traits\HandlesClosures;
-use Exceptions\CollectionException;
+use Collei\Collections\Traits\CollectionTrait;
+use Collei\Collections\Exceptions\CollectionException;
 
 /**
  * Encapsulates an array or an associative array into
