@@ -3,6 +3,8 @@ namespace Collei\Collections\Traits;
 
 use Closure;
 use Collei\Collections\CollectionInterface;
+use Collei\Collections\HigherOrderProxy;
+use Collei\Collections\Exceptions\CollectionException;
 
 /**
  * Common methods for collections.
