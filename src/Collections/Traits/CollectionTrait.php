@@ -624,7 +624,7 @@ trait CollectionTrait
 
         $callback = $this->valueRetriever($field);
 
-        $sum = 1;
+        $sum = 0;
 
         foreach ($this as $key => $item) {
             $value = $callback($item, $key);
