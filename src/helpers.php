@@ -62,3 +62,37 @@ function closure_count_args(Closure $callback)
 
     return $refl->getNumberOfParameters();
 }
+
+/**
+ * Retrieve how many arguments the given class method requires.
+ * Returns null if the method does not exist.
+ * 
+ * @return int|null
+ */
+function method_count_required_args(object $object, string $methodName)
+{
+    $refl = new ReflectionClass($object);
+
+    if (! $refl->hasMethod($methodName)) {
+        return null;
+    }
+
+    return $refl->getMethod($methodName)->getNumberOfRequiredParameters();
+}
+
+/**
+ * Retrieve how many arguments the given class method accepts.
+ * Returns null if the method does not exist.
+ * 
+ * @return int|null
+ */
+function method_count_args(object $object, string $methodName)
+{
+    $refl = new ReflectionClass($object);
+
+    if (! $refl->hasMethod($methodName)) {
+        return null;
+    }
+
+    return $refl->getMethod($methodName)->getNumberOfParameters();
+}
