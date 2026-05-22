@@ -784,7 +784,7 @@ trait CollectionTrait
     protected function arrayFrom($items, bool $throwException = false)
     {
         if ($items instanceof CollectionInterface) {
-            return $items->all();
+            return $items->toArray();
         }
 
         if (is_array($items)) {
