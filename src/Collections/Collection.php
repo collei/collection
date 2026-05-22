@@ -598,6 +598,22 @@ class Collection implements CollectionInterface, IteratorAggregate
 	}
 
 	/**
+	 * Sort-desc the collection by one field or a callback.
+	 *
+	 * @param string|array|callable $field
+	 * @param int $options
+	 * @return static
+	 */
+	public function sortByDesc($field, $options = SORT_REGULAR)
+    {
+        if (is_array($field) && count($field) > 0) {
+            $field = array_shift($field);
+        }
+
+        return $this->sortBy($field, $options, true);
+    }
+
+	/**
 	 * Sort the collection through several fields.
 	 *
 	 * @param array $comparisons
