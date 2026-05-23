@@ -33,6 +33,18 @@ class Collection implements CollectionInterface, IteratorAggregate
     }
 
     /**
+     * For use of PHP dump functions.
+     * 
+     * @return array
+     */
+    public function __debugInfo()
+    {
+        return [
+            'items' => $this->items
+        ];
+    }
+
+    /**
      * Returns a new filled collection indexed from $startIndex
      * with $count elements, and using $value as item values.
      * 
