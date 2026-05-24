@@ -13,7 +13,7 @@ use Collei\Collections\Exceptions\CollectionException;
  * Encapsulates an array or an associative array into
  * a class while embodying several operations.
  */
-class Collection implements CollectionInterface, IteratorAggregate
+class Collection implements CollectionInterface, SortableInterface, IteratorAggregate
 {
     use CollectionTrait;
 
