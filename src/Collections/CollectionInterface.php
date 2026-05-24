@@ -2,12 +2,20 @@
 namespace Collei\Collections;
 
 use Closure;
+use IteratorAggregate;
 
 /**
  * Common methods for collections.
  */
-interface CollectionInterface
+interface CollectionInterface extends IteratorAggregate
 {
+    /**
+     * Retrieve an external iterator or traversable.
+     * 
+     * @return ArrayIterator
+     */
+    public function getIterator(): Traversable;
+    
     /**
      * Checks if all array elements satisfy a callback function.
      * 
