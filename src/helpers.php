@@ -108,7 +108,16 @@ if (! function_exists('method_count_args')) {
 }
 
 if (! function_exists('pretty_dump')) {
-    function pretty_dump($value, bool $open = false)
+    /**
+     * Dumps variable and formats dump content in a browseable manner
+     * with toggleable levels.
+     * 
+     * @param mixed $value
+     * @param bool $return_value = false
+     * @param bool $open = false
+     * @return string
+     */
+    function pretty_dump($value, bool $return_value = false, bool $open = false)
     {
         // unique dump ID
         static $dump_id = 0;
@@ -154,23 +163,32 @@ if (! function_exists('pretty_dump')) {
                 continue;
             }
 
+            // crafts level based on indentation (8 spaces per level)
             $level = (strlen($line) - strlen(ltrim($line))) / 8;
 
             $line_ready = ($line_cleaned !== $line) ? ltrim($line) : $line;
 
             if ($level < $level_prior) {
-                for ($co = $level_prior; $co > $level; --$co)
+                // close any opened DIVs
+                for ($co = $level_prior; $co > $level; --$co) {
                     $levels[] = '</div></div>';
-                
-                ++$element_count;
+                }
             } elseif ($level > $level_prior) {
                 $last = count($levels) - 1;
+
+                // define div state
                 $state = ($level > 1) ? $divState : 'open';
+
+                // HTML elements
                 $btnName = sprintf('%sp%s', $dump_id, $element_count);
                 $button = "<button id=\"btnDump{$btnName}\" class=\"dumper-btn-toggle\" data-state=\"{$state}\" onclick=\"tggl(this)\"></button>";
                 $span = "<span>{$levels[$last]}</span>";
                 $div = "<div class=\"dumper-panel dumper-level-{$level}\"><div id=\"panelDump{$btnName}\">";
+
+                // append HTML elements
                 $levels[$last] = $button.$span.$div;
+
+                // update element count
                 ++$element_count;
             }
 
@@ -200,6 +218,10 @@ if (! function_exists('pretty_dump')) {
         // allows counting function calls
         ++$dump_id;
 
-        return $dump_result;
+        if ($return_value) {
+            return $dump_result;
+        }
+
+        echo $dump_result;
     }
 }
