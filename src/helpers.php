@@ -210,8 +210,8 @@ if (! function_exists('pretty_dump')) {
         // so we can let css3 do the hard work accordingly.
         $dump_result .= "<div class=\"dumper-main\" data-id=\"{$dump_id}\"><span></span>"
             . str_replace(
-                [">\x01\x03\x02\x04[", "\x01\x03\x02\x04</", ">\x01\x03\x02\x04<", "\x01\x03\x02\x04"],
-                ['>[', '</', '><', "\n"],
+                ["=>\x01\x03\x02\x04[", ">\x01\x03\x02\x04[", "\x01\x03\x02\x04</", ">\x01\x03\x02\x04<", "\x01\x03\x02\x04"],
+                ["=>\n[", '>[', '</', '><', "\n"],
                 implode("\x01\x03\x02\x04", $levels)
             ) . '</div>';
 
