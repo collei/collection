@@ -131,7 +131,7 @@ if (! function_exists('pretty_dump')) {
             </script>
         ";
 
-        $open = $open ? 'open' : 'closed';
+        $divState = $open ? 'open' : 'closed';
 
         $lines = explode("\n", print_r($value, true));
 
@@ -165,8 +165,9 @@ if (! function_exists('pretty_dump')) {
                 ++$element_count;
             } elseif ($level > $level_prior) {
                 $last = count($levels) - 1;
+                $state = ($level > 1) ? $divState : 'open';
                 $btnName = sprintf('%sp%s', $dump_id, $element_count);
-                $button = "<button id=\"btnDump{$btnName}\" class=\"dumper-btn-toggle\" data-state=\"{$open}\" onclick=\"tggl(this)\"></button>";
+                $button = "<button id=\"btnDump{$btnName}\" class=\"dumper-btn-toggle\" data-state=\"{$state}\" onclick=\"tggl(this)\"></button>";
                 $span = "<span>{$levels[$last]}</span>";
                 $div = "<div class=\"dumper-panel dumper-level-{$level}\"><div id=\"panelDump{$btnName}\">";
                 $levels[$last] = $button.$span.$div;
