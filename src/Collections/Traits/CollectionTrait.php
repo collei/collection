@@ -245,7 +245,7 @@ trait CollectionTrait
     }
 
     /**
-     * Returns a new collection indexed by the kesy of this
+     * Returns a new collection indexed by the keys of this
      * collection and using $value as item values.
      * 
      * @param mixed $value = null
