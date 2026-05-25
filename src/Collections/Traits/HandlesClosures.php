@@ -36,9 +36,13 @@ trait HandlesClosures
 	 * @param mixed $value
 	 * @return \Closure
 	 */
-	protected function equality($value)
+	protected function equality($value, bool $strict = true)
 	{
-		return (function ($item, $key = null) use ($value) { return $item === $value; });
+		if ($strict) {
+			return (function ($item, $key = null) use ($value) { return $item === $value; });
+		}
+
+		return (function ($item, $key = null) use ($value) { return $item == $value; });
 	}
 
 	/**
