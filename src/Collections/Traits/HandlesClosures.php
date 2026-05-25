@@ -72,4 +72,41 @@ trait HandlesClosures
 			return false;
 		}
 	}
+
+	/**
+	 * Tells generator closures and non-generator closures apart,
+	 * returning two arrays: the former with generator closures
+	 * and the latter with non-generator closures.
+	 * 
+	 * @param mixed ...$generators
+	 * @return array
+	 */
+	protected function tellGeneratorsApart(...$generators)
+	{
+		$lambdas = [];
+
+		foreach ($generators as $key => $generator) {
+			if (is_iterable($generator)) {
+				$generators[$key] = (function() use ($generator) { yield from $generator; });
+
+				continue;
+			}
+
+			if (! ($generator instanceof Closure)) {
+				unset($generators[$key]);
+
+				continue;
+			}
+
+			if ($this->isGenerator($generator)) {
+				continue;
+			}
+
+			$lambdas[$key] = $generator;
+
+			unset($generators[$key]);
+		}
+
+		return array($generators, $lambdas);
+	}
 }
