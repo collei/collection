@@ -192,7 +192,8 @@ if (! function_exists('pretty_dump')) {
                 ++$element_count;
             }
 
-            $levels[] = trim($line_ready);
+            // Encode HTML characters < and >
+            $levels[] = str_replace(['<','>'],['&lt;','&gt;'],trim($line_ready));
 
             $level_prior = $level;
         }
