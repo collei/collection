@@ -3,6 +3,7 @@ namespace Collei\Collections;
 
 use Closure;
 use IteratorAggregate;
+use Traversable;
 
 /**
  * Common methods for collections.
