@@ -376,6 +376,8 @@ class Collection implements CollectionInterface, SortableInterface
      * @param iterable|CollectionInterface $array
      * @param iterable|CollectionInterface ...$arrays
      * @return static
+     * @throws InvalidArgumentException when at least one argument is not an iterable
+     *      or a CollectionInterface
      */
     public function merge($array, ...$arrays)
     {
@@ -391,6 +393,8 @@ class Collection implements CollectionInterface, SortableInterface
      * @param iterable|CollectionInterface $array
      * @param iterable|CollectionInterface ...$arrays
      * @return static
+     * @throws InvalidArgumentException when at least one argument is not an iterable
+     *      or a CollectionInterface
      */
     public function mergeRecursive($array, ...$arrays)
     {
