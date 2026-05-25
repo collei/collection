@@ -561,7 +561,7 @@ trait CollectionTrait
 	 */
     public function searchStrict($needle)
     {
-        return array_search($needle, $this->items, true);
+        return $this->search($needle, true);
     }
 
     /**
@@ -798,7 +798,7 @@ trait CollectionTrait
     protected function arraysFrom($arrays, bool $throwException = false)
     {
         foreach ($arrays as $index => $array) {
-            $arrays[$index] = $this->arrayFrom($array);
+            $arrays[$index] = $this->arrayFrom($array, $throwException);
         }
 
         return $arrays;
