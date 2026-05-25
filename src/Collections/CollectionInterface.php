@@ -264,8 +264,22 @@ interface CollectionInterface extends IteratorAggregate
      * @param iterable|CollectionInterface $array
      * @param iterable|CollectionInterface ...$arrays
      * @return static
+     * @throws InvalidArgumentException when at least one argument is not an iterable
+     *      or a CollectionInterface
      */
     public function merge($array, ...$arrays);
+
+    /**
+     * Recursively merges this collection with the given array(s)
+     * or collection(s), returning the result as a new collection.
+     * 
+     * @param iterable|CollectionInterface $array
+     * @param iterable|CollectionInterface ...$arrays
+     * @return static
+     * @throws InvalidArgumentException when at least one argument is not an iterable
+     *      or a CollectionInterface
+     */
+    public function mergeRecursive($array, ...$arrays);
 
     /**
      * Retrieves the minimum value of the collection.
