@@ -398,10 +398,11 @@ interface CollectionInterface extends IteratorAggregate
     public function unique(int $flags = SORT_STRING);
 
     /**
-     * Appends values to the start of this collection.
+     * Returns a copy of this collection with values appended
+     * before the original ones.
      * 
      * @param mixed ...$values
-     * @return $this
+     * @return static
      */
     public function unshift(...$values);
 

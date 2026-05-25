@@ -664,16 +664,15 @@ trait CollectionTrait
     }
 
     /**
-     * Appends values to the start of this collection.
+     * Returns a copy of this collection with values appended
+     * before the original ones.
      * 
      * @param mixed ...$values
-     * @return $this
+     * @return static
      */
     public function unshift(...$values)
     {
-        array_unshift($this->items, ...$values);
-
-        return $this;
+        return new static(array_merge($values, $this->items));
     }
 
     /**
