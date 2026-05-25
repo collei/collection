@@ -50,4 +50,22 @@ trait HandlesClosures
 	{
 		return (function ($value, $key = null) { return $value; });
 	}
+
+	/**
+	 * Tells if the closure is a Generator function.
+	 * 
+	 * @param Closure $closure
+	 * @return bool
+	 */
+	protected function isGenerator(Closure $closure)
+	{
+		try {
+			$refl = new ReflectionFunction($closure);
+
+			return $refl->isGenerator();
+			//
+		} catch(ReflectionException $re) {
+			return false;
+		}
+	}
 }
