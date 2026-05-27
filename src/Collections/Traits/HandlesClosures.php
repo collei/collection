@@ -87,7 +87,11 @@ trait HandlesClosures
 
 		foreach ($generators as $key => $generator) {
 			if (is_iterable($generator)) {
-				$generators[$key] = (function() use ($generator) { yield from $generator; });
+				$generators[$key] = (function() use ($generator) {
+					foreach ($generator as $key => $value) {
+						yield $key => $value;
+					}
+				});
 
 				continue;
 			}
