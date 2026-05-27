@@ -113,4 +113,56 @@ trait HandlesClosures
 
 		return array($generators, $lambdas);
 	}
+
+	/**
+	 * Returns a comparator closure that compares two keys for
+	 * any array.
+	 * 
+	 * @return Closure
+	 */
+	protected function stringableKeyEquality()
+	{
+		return function($a, $b) { return (string) $a === (string) $b; };
+	}
+
+	/**
+	 * Returns a comparator closure that tries to compare two values
+	 * by their string representations, returning false if one of them
+	 * cannot be cast to string. If both are string castable, then
+	 * the closure returns the result of (string) $a === (string) $b
+	 * 
+	 * @return Closure
+	 */
+	protected function stringableValueEquality()
+	{
+		if (version_compare(PHP_VERSION, '7.4.0', '>=')) {
+			return function($a, $b) {
+				try {
+					return @(string) $a === @(string) $b;
+				} catch (Throwable $error) {
+					return false;
+				}
+			};
+		}
+
+		return function($a, $b) {
+			if (is_array($a) && is_array($b)) {
+				return $a === $b;
+			}
+
+			if ((is_object($a) && ! method_exists($a, '__toString')) || is_resource($a)) {
+				return false;
+			}
+
+			if ((is_object($b) && ! method_exists($b, '__toString')) || is_resource($b)) {
+				return false;
+			}
+
+			if (! is_array($a) && ! is_array($b)) {
+				return (string) $a === (string) $b;
+			}
+
+			return false;
+		};
+	}
 }
