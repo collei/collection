@@ -116,6 +116,101 @@ interface CollectionInterface extends IteratorAggregate
     public function countValuesStrict();
 
     /**
+     * Computes the difference of this collection with the given
+     * array(s) or collection(s), returning it as a new collection.
+     * 
+     * @param iterable|CollectionInterface $array
+     * @param iterable|CollectionInterface ...$arrays
+     * @return static
+     */
+    public function diff($array, ...$arrays);
+
+    /**
+     * Computes the difference of this collection with the given
+     * array(s) or collection(s), with additional index check, and
+     * returning the result as a new collection.
+     * 
+     * @param iterable|CollectionInterface $array
+     * @param iterable|CollectionInterface ...$arrays
+     * @return static
+     */
+    public function diffAssoc($array, ...$arrays);
+
+    /**
+     * Computes the difference of this collection with the given
+     * array(s) or collection(s), with additional index check
+     * performed by a callback, returning the result as a new collection.
+     * 
+     * @param iterable|CollectionInterface $array
+     * @param iterable|CollectionInterface ...$arrays
+     * @param callable $callback
+     * @return static
+     */
+    public function diffAssocUsing($items, ...$arguments);
+
+    /**
+     * Computes the difference of this collection with the given
+     * array(s) or collection(s), using keys for comparison,
+     * returning the result as a new collection.
+     * 
+     * @param iterable|CollectionInterface $array
+     * @param iterable|CollectionInterface ...$arrays
+     * @return static
+     */
+    public function diffKeys($items, ...$arrays);
+
+    /**
+     * Computes the difference of this collection with the given
+     * array(s) or collection(s), using a callback on the keys for
+     * comparison, returning the result as a new collection.
+     * 
+     * @param iterable|CollectionInterface $array
+     * @param iterable|CollectionInterface ...$arrays
+     * @param callable $callback
+     * @return static
+     */
+    public function diffKeysUsing($items, ...$arguments);
+
+    /**
+     * Computes the difference of this collection with the given
+     * array(s) or collection(s), using a callback on the values for
+     * comparison, returning the result as a new collection.
+     * 
+     * @param iterable|CollectionInterface $array
+     * @param iterable|CollectionInterface ...$arrays
+     * @param callable $callback
+     * @return static
+     */
+    public function diffUsing($items, ...$arguments);
+
+    /**
+     * Computes the difference of this collection with the given
+     * array(s) or collection(s), with additional index check, by
+     * using a callback on the values for comparison, returning
+     * the result as a new collection.
+     * 
+     * @param iterable|CollectionInterface $array
+     * @param iterable|CollectionInterface ...$arrays
+     * @param callable $callback
+     * @return static
+     */
+    public function diffUsingAssoc($items, ...$arguments);
+
+    /**
+     * Computes the difference of this collection with the given
+     * array(s) or collection(s), with additional index check, by
+     * using a callback on the values and another callback on the
+     * keys for comparison, returning the result as a new collection.
+     * 
+     * @param iterable|CollectionInterface $array
+     * @param iterable|CollectionInterface ...$arrays
+     * @param callable $valueCallback
+     * @param callable $keyCallback
+     * @return static
+     */
+    public function diffUsingAssocUsing($items, ...$arguments);
+
+    /**
      * Checks if a value exists in this collection.
      * 
      * @param mixed $value
@@ -205,6 +300,98 @@ interface CollectionInterface extends IteratorAggregate
      * @return bool
      */
     public function hasKey($key);
+
+    /**
+     * Computes the intersection of the given arrays/collections with
+     * this collection, and returns the result.
+     * 
+     * @param iterable|CollectionInterface $items
+     * @param iterable|CollectionInterface ...$arrays
+     * @return static
+     */
+    public function intersect($items, ...$arrays);
+
+    /**
+     * Computes the intersection of the given arrays/collections with
+     * this collection, with additional index check, and returns the result.
+     * 
+     * @param iterable|CollectionInterface $items
+     * @param iterable|CollectionInterface ...$arrays
+     * @return static
+     */
+    public function intersectAssoc($items, ...$arrays);
+
+    /**
+     * Computes the intersection of the given arrays/collections with
+     * this collection, with additional index check, using $callback for
+     * index comparison, and returns the result.
+     * 
+     * @param iterable|CollectionInterface $items
+     * @param iterable|CollectionInterface ...$arrays
+     * @param callable $callback
+     * @return static
+     */
+    public function intersectAssocUsing($items, ...$arguments);
+
+    /**
+     * Computes the intersection of the given arrays/collections with
+     * this collection, using keys for comparison, and returns the result.
+     * 
+     * @param iterable|CollectionInterface $items
+     * @param iterable|CollectionInterface ...$arrays
+     * @return static
+     */
+    public function intersectKeys($items, ...$arrays);
+
+    /**
+     * Computes the intersection of the given arrays/collections with
+     * this collection, using keys for comparison through the given
+     * $callback, and returns the result.
+     * 
+     * @param iterable|CollectionInterface $items
+     * @param iterable|CollectionInterface ...$arrays
+     * @param callable $callback
+     * @return static
+     */
+    public function intersectKeysUsing($items, ...$rest);
+
+    /**
+     * Computes the intersection of the given arrays/collections with
+     * this collection, using the given $callback for value comparison,
+     * and returns the result.
+     * 
+     * @param iterable|CollectionInterface $items
+     * @param iterable|CollectionInterface ...$arrays
+     * @param callable $callback
+     * @return static
+     */
+    public function intersectUsing($items, ...$arguments);
+
+    /**
+     * Computes the intersection of the given arrays/collections with
+     * this collection, with additional index check, using the given
+     * $callback for value comparison, and returns the result.
+     * 
+     * @param iterable|CollectionInterface $items
+     * @param iterable|CollectionInterface ...$arrays
+     * @param callable $callback
+     * @return static
+     */
+    public function intersectUsingAssoc($items, ...$arguments);
+
+    /**
+     * Computes the intersection of the given arrays/collections with
+     * this collection, with additional index check, using the first given
+     * $valueCallback for value comparison and the second given
+     * $keyCallback for key comparison, and returns the result.
+     * 
+     * @param iterable|CollectionInterface $items
+     * @param iterable|CollectionInterface ...$arrays
+     * @param callable $valueCallback
+     * @param callable $keyCallback
+     * @return static
+     */
+    public function intersectUsingAssocUsing($items, ...$arguments);
 
     /**
      * Return the last item of collection.
