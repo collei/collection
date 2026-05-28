@@ -1,6 +1,10 @@
 <?php
 namespace Collei\Collections\Traits;
 
+use Closure;
+use ReflectionFunction;
+use ReflectionException;
+
 /**
  * Internal Closure utilities.
  */
