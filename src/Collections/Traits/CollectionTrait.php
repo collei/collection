@@ -135,10 +135,10 @@ trait CollectionTrait
      * 3 ($current, $key, $chunk) arguments and must return false
      * to split right at the current 
      * 
-     * @param callable $callabck
+     * @param callable $callback
      * @return static
      */
-    public function chunkWhile(callable $callabck)
+    public function chunkWhile(callable $callback)
     {
         $requiredArgs = callable_count_args($callback);
 
@@ -491,6 +491,89 @@ trait CollectionTrait
         }
 
         return $max;
+    }
+
+    /**
+     * Calculates the median of the collection.
+     * 
+     * If the collection length is even and at least one of the elements is
+     * not numeric, returns an array with both elements.
+     * 
+     * @param string|callable $field = null
+     * @return mixed
+     */
+    public function median($field = null)
+    {
+        if ($this->isEmpty()) {
+            return null;
+        }
+
+        $callback = is_null($field) ? $this->identity() : $this->valueRetriever($field);
+
+        $elements = [];
+
+        foreach ($this as $key => $item) {
+            $elements[] = $callback($item, $key);
+        }
+
+        sort($elements);
+
+        $count = count($elements);
+        $middle = intdiv($count, 2);
+
+        if ($count % 2 !== 0) {
+            return $elements[$middle];
+        }
+
+        list($low, $high) = array($elements[$middle - 1], $elements[$middle]);
+
+        return (is_numeric($low) && is_numeric($high))
+            ? (($low + $high) / 2.0)
+            : [$low, $high];
+    }
+
+    /**
+     * Calculates the mode of the collection.
+     * 
+     * @param string|callable $field = null
+     * @return mixed
+     */
+    public function mode($field = null)
+    {
+        if ($this->isEmpty()) {
+            return null;
+        }
+
+        $callback = is_null($field) ? $this->identity() : $this->valueRetriever($field);
+
+        list($elements, $counts) = array([], []);
+
+        foreach ($this as $key => $item) {
+            $value = $callback($item, $key);
+
+            $index = array_search($value, $elements, true);
+
+            if ($index === false) {
+                $elements[] = $value;
+                $counts[] = 1;
+            } else {
+                $counts[$index]++;
+            }
+        }
+
+        $higher = -PHP_FLOAT_MAX;
+
+        foreach ($counts as $count) if ($count > $higher) {
+            $higher = $count;
+        }
+
+        $mode = [];
+
+        foreach ($counts as $index => $count) if ($count === $higher) {
+            $mode[] = $elements[$index];
+        }
+
+        return (count($mode) === 1) ? $mode[0] : $mode;
     }
 
     /**

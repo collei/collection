@@ -445,6 +445,17 @@ interface CollectionInterface extends IteratorAggregate
     public function max($field = null);
 
     /**
+     * Calculates the median of the collection.
+     * 
+     * If the collection length is even and at least one of the elements is
+     * not numeric, returns an array with both elements.
+     * 
+     * @param string|callable $field = null
+     * @return mixed
+     */
+    public function median($field = null);
+
+    /**
      * Merges this collection with the given array(s) or collection(s),
      * returning the result as a new collection.
      * 
@@ -477,6 +488,14 @@ interface CollectionInterface extends IteratorAggregate
      * @return int|float
      */
     public function min($field = null);
+
+    /**
+     * Calculates the mode of the collection.
+     * 
+     * @param string|callable $field = null
+     * @return mixed
+     */
+    public function mode($field = null);
 
     /**
      * Returns a copy of the collection, but padded to $length with
