@@ -1218,10 +1218,14 @@ class LazyCollection implements CollectionInterface
         $original = $this->getGenerator();
 
         return new static(function() use ($original, $arrays) {
-            yield from $original();
+            $counting = 0;
 
-            foreach ($arrays as $array) {
-                yield from $array;
+            foreach ($original() as $key => $value) {
+                yield (is_string($key) ? $key : $counting++) => $value;
+            }
+
+            foreach ($arrays as $array) foreach ($array as $key => $value) {
+                yield (is_string($key) ? $key : $counting++) => $value;
             }
         });
     }
