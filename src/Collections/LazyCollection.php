@@ -132,12 +132,10 @@ class LazyCollection implements CollectionInterface
 
                 if (count($cumulated) === $length) {
                     $chunk = function() use ($cumulated, $preserveKeys) {
+                        $counting = 0;
                         foreach ($cumulated as $item) {
-                            if ($preserveKeys) {
-                                yield key($item) => current($item);
-                            } else {
-                                yield current($item);
-                            }
+                            yield $preserveKeys ? key($item) : $counting => current($item);
+                            ++$counting;
                         }
                     };
 
@@ -149,12 +147,10 @@ class LazyCollection implements CollectionInterface
 
             if (count($cumulated) > 0) {
                 $chunk = function() use ($cumulated, $preserveKeys) {
+                    $counting = 0;
                     foreach ($cumulated as $item) {
-                        if ($preserveKeys) {
-                            yield key($item) => current($item);
-                        } else {
-                            yield current($item);
-                        }
+                        yield $preserveKeys ? key($item) : $counting => current($item);
+                        ++$counting;
                     }
                 };
 
