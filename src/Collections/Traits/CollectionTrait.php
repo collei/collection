@@ -127,6 +127,57 @@ trait CollectionTrait
     }
 
     /**
+     * Produces a copy of this collection, split into chunks by
+     * using the given $callback, and returns a collection of
+     * these chunks.
+     * 
+     * The passed callable must accept either 2 ($current, $next) or
+     * 3 ($current, $key, $chunk) arguments and must return false
+     * to split right at the current 
+     * 
+     * @param callable $callabck
+     * @return static
+     */
+    public function chunkWhile(callable $callabck)
+    {
+        $requiredArgs = callable_count_args($callback);
+
+        if ($requiredArgs < 2 || $requiredArgs > 3) {
+            throw new InvalidArgumentException('The passed callable must accept either 2 or 3 arguments');
+        }
+
+        list($chunk, $chunks) = array([], []);
+
+        if ($requiredArgs === 3) {
+            foreach ($this as $key => $value) {
+                if (! $callback($value, $key, $chunk)) {
+                    $chunks[] = $chunk;
+                    
+                    $chunk = [];
+                }
+
+                $chunk[$key] = $value;
+            }
+        } elseif ($requiredArgs === 2) {
+            foreach ($this as $key => $value) {
+                if (! $callback(array_last($chunk), $value)) {
+                    $chunks[] = $chunk;
+                    
+                    $chunk = [];
+                }
+
+                $chunk[$key] = $value;
+            }
+        }
+
+        if (! empty($chunk)) {
+            $chunks[] = $chunk;
+        }
+
+        return new static($chunks);
+    }
+
+    /**
      * Return a new collection with values from a single column
      * in the collection.
      * 
