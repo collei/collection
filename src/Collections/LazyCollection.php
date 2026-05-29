@@ -160,6 +160,89 @@ class LazyCollection implements CollectionInterface
     }
 
     /**
+     * Produces a copy of this collection, split into chunks by
+     * using the given $callback, and returns a collection of
+     * these chunks.
+     * 
+     * The passed callable must accept either 2 ($current, $next) or
+     * 3 ($current, $key, $chunk) arguments and must return false
+     * to split right at the current 
+     * 
+     * @param callable $callabck
+     * @return static
+     */
+    public function chunkWhile(callable $callabck)
+    {
+        $requiredArgs = callable_count_args($callback);
+
+        if ($requiredArgs < 2 || $requiredArgs > 3) {
+            throw new InvalidArgumentException('The passed callable must accept either 2 or 3 arguments');
+        }
+
+        $original = $this->getGenerator();
+
+        if ($requiredArgs === 3) return new static(function() use ($original, $callback) {
+            $cumulated = [];
+
+            foreach ($original() as $key => $value) {
+                if (! $callback($value, $key, $cumulated)) {
+                    $chunk = function() use ($cumulated) {
+                        foreach ($cumulated as $key => $item) {
+                            yield $key => $item;
+                        }
+                    };
+
+                    yield new self($chunk);
+
+                    $cumulated = [];
+                }
+
+                $cumulated[$key] = $value;
+            }
+
+            if (count($cumulated) > 0) {
+                $chunk = function() use ($cumulated) {
+                    foreach ($cumulated as $key => $item) {
+                        yield $key => $item;
+                    }
+                };
+
+                yield new self($chunk);
+            }
+        });
+
+        if ($requiredArgs === 2) return new static(function() use ($original, $callback) {
+            $cumulated = [];
+
+            foreach ($original() as $key => $value) {
+                if (! $callback(array_last($cumulated), $value)) {
+                    $chunk = function() use ($cumulated) {
+                        foreach ($cumulated as $key => $item) {
+                            yield $key => $item;
+                        }
+                    };
+
+                    yield new self($chunk);
+
+                    $cumulated = [];
+                }
+
+                $cumulated[$key] = $value;
+            }
+
+            if (count($cumulated) > 0) {
+                $chunk = function() use ($cumulated) {
+                    foreach ($cumulated as $key => $item) {
+                        yield $key => $item;
+                    }
+                };
+
+                yield new self($chunk);
+            }
+        });
+    }
+
+    /**
      * Return a new collection with values from a single column
      * in the collection.
      * 
