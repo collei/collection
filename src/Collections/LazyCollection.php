@@ -168,10 +168,10 @@ class LazyCollection implements CollectionInterface
      * 3 ($current, $key, $chunk) arguments and must return false
      * to split right at the current 
      * 
-     * @param callable $callabck
+     * @param callable $callback
      * @return static
      */
-    public function chunkWhile(callable $callabck)
+    public function chunkWhile(callable $callback)
     {
         $requiredArgs = callable_count_args($callback);
 
