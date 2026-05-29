@@ -41,6 +41,34 @@ if (! function_exists('deep_get')) {
     }
 }
 
+if (! function_exists('callable_count_required_args')) {
+    /**
+     * Retrieve how many arguments the given closure requires.
+     * 
+     * @return int
+     */
+    function callable_count_required_args(callable $callback)
+    {
+        $refl = new ReflectionFunction($callback);
+
+        return $refl->getNumberOfRequiredParameters();
+    }
+}
+
+if (! function_exists('callable_count_args')) {
+    /**
+     * Retrieve how many arguments the given closure accepts.
+     * 
+     * @return int
+     */
+    function callable_count_args(callable $callback)
+    {
+        $refl = new ReflectionFunction($callback);
+
+        return $refl->getNumberOfParameters();
+    }
+}
+
 if (! function_exists('closure_count_required_args')) {
     /**
      * Retrieve how many arguments the given closure requires.
