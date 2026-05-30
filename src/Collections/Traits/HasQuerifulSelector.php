@@ -20,7 +20,7 @@ trait HasQuerifulSelector
             ? array(true, '=')
             : ((func_num_args() === 2) ? array($operator, '=') : array($value, $operator));
 
-		return function ($item) use ($key, $operator, $value) {
+		return function ($item, $itemKey = null) use ($key, $operator, $value) {
 			$retrieved = deep_get($item, $key);
 
 			$strings = array_filter([$retrieved, $value], function ($item) {
@@ -31,7 +31,7 @@ trait HasQuerifulSelector
 				return in_array($operator, ['!=', '<>', '!==']);
 			}
 
-			switch ($operator) {
+			switch (strtolower($operator)) {
 				default:
 				case '=':
 				case '==':  return $retrieved == $value;
@@ -43,8 +43,9 @@ trait HasQuerifulSelector
 				case '>=':  return $retrieved >= $value;
 				case '===': return $retrieved === $value;
 				case '!==': return $retrieved !== $value;
-				case 'in':     return is_array($value) ? in_array($retrieved, $value) : ($retrieved == $value);
-				case 'not in': return is_array($value) ? (! in_array($retrieved, $value)) : ($retrieved != $value);
+				case 'in':         return is_array($value) ? in_array($retrieved, $value) : ($retrieved == $value);
+				case 'not in':     return is_array($value) ? (! in_array($retrieved, $value)) : ($retrieved != $value);
+				case 'instanceof': return is_string($value) ? is_a($retrieved, $value) : false;
 			}
 		};
 	}
