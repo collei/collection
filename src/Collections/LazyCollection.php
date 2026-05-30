@@ -38,7 +38,7 @@ class LazyCollection implements CollectionInterface
             };
         } elseif (is_null($source)) {
             $this->generator = function() {
-                yield null;
+                yield from [];
             };
         } elseif ($source instanceof Generator) {
             throw new InvalidArgumentException(
