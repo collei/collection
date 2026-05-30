@@ -153,7 +153,7 @@ if (! function_exists('pretty_dump')) {
         // built-in necessary CSS code and some vanilla Javascript
         static $cssJscript = "
             <style>
-            button.dumper-btn-toggle { height: 19px !important; border-top: 3px !important; }
+            button.dumper-btn-toggle { height: 20px !important; border-top: 3px !important; font-family: Arial !important; font-size: 14px !important; line-height: 14px !important }
             button.dumper-btn-toggle[data-state=\"open\"]::before { content: '▲' }
             button.dumper-btn-toggle[data-state=\"open\"] + span + div.dumper-panel>div { display: block; }
             button.dumper-btn-toggle[data-state=\"closed\"]::before { content: '▼' }
