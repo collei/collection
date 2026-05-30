@@ -397,6 +397,26 @@ trait CollectionTrait
     }
 
     /**
+     * Tells if the collection is empty.
+     * 
+     * @return bool
+     */
+    public function isEmpty()
+    {
+        return empty($this->items);
+    }
+
+    /**
+     * Tells if the collection is not empty.
+     * 
+     * @return bool
+     */
+    public function isNotEmpty()
+    {
+        return ! $this->isEmpty();
+    }
+
+    /**
      * Return the last item of collection.
      * 
      * @return mixed

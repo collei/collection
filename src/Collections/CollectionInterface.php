@@ -394,6 +394,20 @@ interface CollectionInterface extends IteratorAggregate
     public function intersectUsingAssocUsing($items, ...$arguments);
 
     /**
+     * Tells if the collection is empty.
+     * 
+     * @return bool
+     */
+    public function isEmpty();
+
+    /**
+     * Tells if the collection is not empty.
+     * 
+     * @return bool
+     */
+    public function isNotEmpty();
+
+    /**
      * Return the last item of collection.
      * 
      * @return mixed
