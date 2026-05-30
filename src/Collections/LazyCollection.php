@@ -1077,6 +1077,20 @@ class LazyCollection implements CollectionInterface
     }
 
     /**
+     * Tells if the collection is empty.
+     * 
+     * @return bool
+     */
+    public function isEmpty()
+    {
+        $generator = $this->getGenerator();
+
+        $iterator = $generator();
+
+        return is_null($iterator->key());
+    }
+
+    /**
      * Return the last item of collection.
      * 
      * @return mixed
