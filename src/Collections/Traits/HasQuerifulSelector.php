@@ -23,8 +23,8 @@ trait HasQuerifulSelector
 		return function ($item) use ($key, $operator, $value) {
 			$retrieved = deep_get($item, $key);
 
-			$strings = array_filter([$retrieved, $value], function ($value) {
-				return is_string($value) || (is_object($value) && method_exists($value, '__toString'));
+			$strings = array_filter([$retrieved, $value], function ($item) {
+				return is_string($item) || (is_object($item) && method_exists($item, '__toString'));
 			});
 
 			if (count($strings) < 2 && count(array_filter([$retrieved, $value], 'is_object')) == 1) {
@@ -43,6 +43,8 @@ trait HasQuerifulSelector
 				case '>=':  return $retrieved >= $value;
 				case '===': return $retrieved === $value;
 				case '!==': return $retrieved !== $value;
+				case 'in':     return is_array($value) ? in_array($retrieved, $value) : ($retrieved == $value);
+				case 'not in': return is_array($value) ? (! in_array($retrieved, $value)) : ($retrieved != $value);
 			}
 		};
 	}
